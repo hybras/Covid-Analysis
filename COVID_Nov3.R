@@ -1,3 +1,6 @@
+# install.packages("maps")
+# RUN THIS BEFORE RUNNING THE CODE BELOW
+
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
