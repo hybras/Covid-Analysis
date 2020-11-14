@@ -9,7 +9,7 @@ library(ggrepel)
 library(scales)
 #change the path below to the address to the file on your computer.
 
-path <- "~/Desktop/Teaching/R_Scripts/Covid_Project/COVID-19-master_Nov3/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
+path <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 df_1 <- read.csv(path)
 head(df_1)
 
@@ -31,7 +31,7 @@ col_names_1<- colnames(covid_cont_states_1)[c(2:286)]
 new_col_names_1 <- seq(as.Date("2020/1/21"), by = "day", length.out = 286) #get dates in date-time format
 
 covid_cont_states_1 <- covid_cont_states_1 %>% 
-  setNames(new_col_names) %>%
+  setNames(new_col_names_1) %>%
   dplyr::rename(region = "2020-01-21")
 
 
