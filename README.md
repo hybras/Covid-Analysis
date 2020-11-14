@@ -6,10 +6,12 @@
 Right now it includes some fixes for the professor's typos. 
 
 ## To Run
-Run the following code on your R console:
+First, run the following code on your R console:
 ```r
 install.packages("maps")
 ```
+Then select the entire file (`Ctrl+A` for Win/Linux, `Cmd+A` for Mac) and click `run` on right top)
+
 Leave a message on [Canvas discussion board](https://umd.instructure.com/groups/370526/discussion_topics) or [Github's issue board](https://github.com/hybras/Covid-Anaylsis/issues) if you have any problems.
 
 ## Contributing
