@@ -4,7 +4,7 @@
 
 [COVID_Nov3.R](./COVID_Nov3.R) contains the code we will be working with on this project.
 
-Right now it includes some fixes for the professor's typos. 
+Right now it includes some fixes for the professor's typos.
 
 ## To Run
 

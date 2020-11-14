@@ -8,6 +8,7 @@ output: html_document
 ## Setup
 
 Download data, install packages and load libraries
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
