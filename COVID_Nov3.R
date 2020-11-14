@@ -1,4 +1,4 @@
-# RUN THIS BEFORE RUNNING THE CODE BELOW
+# SEE README.MD BEFORE YOU EDIT ANY OF THE LINES BELOW :)
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -9,7 +9,6 @@ library(png)
 library(ggrepel)
 library(scales)
 library(maps)
-#change the path below to the address to the file on your computer.
 
 path <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 df_1 <- read.csv(path)
