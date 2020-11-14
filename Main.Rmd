@@ -7,6 +7,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
+
+time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
+time_series_US_confirmed <- paste(base_url, file, sep = "")
+print(time_series_US_confirmed)
+time_series_US_confirmed <- read.csv(time_series_US_confirmed)
+
+head(time_series_US_confirmed)
 ```
 
 ## R Markdown
