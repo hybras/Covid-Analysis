@@ -47,13 +47,15 @@ covid_cont_state.long_1 <- pivot_longer(
 )
 
 #Choose states to plot
-plot_states <- c("new york", "florida", "texas", "california")
+plot_states <- c("new york", "florida", "texas", "california", "maryland")
 
 #data for plotting specific states
 covid_plot_data_1 <-
   covid_cont_state.long_1 %>% filter(region == plot_states)
 
 # adjust data based on state population
+
+# gets state populations
 path <- "https://raw.githubusercontent.com/ehuegler/extraStuff/main/SCPRC-EST2019-18%2BPOP-RES.csv"
 state_data <- read.csv(path)
 state_data$NAME <- tolower(state_data$NAME)
@@ -63,10 +65,12 @@ date <- vector()
 cases <- vector()
 covid_plot_data_adjusted <- data.frame(region, date, cases)
 
+# for each selected state it divides the cases by that states
+# population and multiplies by 100,000
 for (state in plot_states) {
   covid_plot_data_adjusted <- merge(covid_plot_data_adjusted,
                                     mutate(filter(covid_plot_data_1, region == state),
-                                           adjusted = cases / filter(state_data, NAME == state)$POPESTIMATE2019 * 100000),
+                                           adjusted = (cases / filter(state_data, NAME == state)$POPESTIMATE2019) * 100000),
                                     all = TRUE)
 }
 
@@ -87,13 +91,13 @@ q_1 <- covid_plot_data_1 %>%
     y = "Number of Cases"
   ) +
   geom_line() +
-  geom_point() +
-  geom_text(
-    aes(label = factor(region)),
-    hjust = 0,
-    position = position_dodge(width = 0.9),
-    size = 4
-  ) +
+  # geom_point() +
+  # geom_text(
+  #   aes(label = factor(region)),
+  #   hjust = 0,
+  #   position = position_dodge(width = 0.9),
+  #   size = 4
+  # ) +
   scale_x_date(limits = as.Date(c("2020-1-22", "2020-11- 02")),
                date_breaks = "1 month",
                date_labels = "%B") +
@@ -106,27 +110,27 @@ q_1 <- covid_plot_data_1 %>%
   )
 
 # with cases adjusted per 100,000 people
-q_2 <- covid_plot_data_1 %>%
+q_2 <- covid_plot_data_adjusted %>%
   ggplot(aes(
     x = as.Date(date),
-    y = cases,
+    y = adjusted,
     group = region,
     color = region
   )) +
   labs(
-    title = "Time Series Plot of Confirmed Cases of COVID",
+    title = "Time Series Plot of Confirmed Cases of COVID per 100,000 People",
     subtitle = "Jonathan Fernandes PhD, University of Maryland, College Park.",
     x = "Date",
-    y = "Number of Cases"
+    y = "Number of Cases per 100,000 People"
   ) +
   geom_line() +
-  geom_point() +
-  geom_text(
-    aes(label = factor(region)),
-    hjust = 0,
-    position = position_dodge(width = 0.9),
-    size = 4
-  ) +
+  # geom_point() +
+  # geom_text(
+  #   aes(label = factor(region)),
+  #   hjust = 0,
+  #   position = position_dodge(width = 0.9),
+  #   size = 4
+  # ) +
   scale_x_date(limits = as.Date(c("2020-1-22", "2020-11- 02")),
                date_breaks = "1 month",
                date_labels = "%B") +
@@ -187,6 +191,16 @@ q_2 <- q_2 +  theme(
 anim_1 <- q_1 + transition_reveal(as.Date(date))
 animation_1 <- animate(
   anim_1,
+  width = 750,
+  height = 650,
+  duration = 20,
+  end_pause = 20,
+  renderer = gifski_renderer()
+)
+
+anim_2 <- q_2 + transition_reveal(as.Date(date))
+animation_2 <- animate(
+  anim_2,
   width = 750,
   height = 650,
   duration = 20,
