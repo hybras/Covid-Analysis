@@ -56,7 +56,7 @@ covid_plot_data_1 <-
 # adjust data based on state population
 
 # gets state populations
-path <- "https://raw.githubusercontent.com/ehuegler/extraStuff/main/SCPRC-EST2019-18%2BPOP-RES.csv"
+path <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
 state_data <- read.csv(path)
 state_data$NAME <- tolower(state_data$NAME)
 
@@ -155,6 +155,30 @@ p_1 <- covid_plot_data_1 %>%
     subtitle = "Jonathan Fernandes PhD, University of Maryland, College Park.",
     x = "Date",
     y = "Number of Cases"
+  ) +
+  geom_line() +
+  scale_x_date(limits = as.Date(c("2020-1-22", "2020-11- 02")),
+               date_breaks = "1 month",
+               date_labels = "%B") +
+  scale_y_continuous(labels = scales::comma) +
+  theme(
+    plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
+    axis.title.x = element_text(color = "black", size = 10),
+    axis.title.y = element_text(color = "black", size = 10)
+  )
+
+p_2 <- covid_plot_data_adjusted %>%
+  ggplot(aes(
+    x = as.Date(date),
+    y = adjusted,
+    group = region,
+    color = region
+  )) +
+  labs(
+    title = "Time Series Plot of Confirmed Cases of COVID",
+    subtitle = "Jonathan Fernandes PhD, University of Maryland, College Park.",
+    x = "Date",
+    y = "Number of Cases per 100,000 People"
   ) +
   geom_line() +
   scale_x_date(limits = as.Date(c("2020-1-22", "2020-11- 02")),
