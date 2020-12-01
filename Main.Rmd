@@ -22,6 +22,8 @@ library(scales)
 library(maps)
 ```
 
+Download and read data.
+
 ```{r Initial_Data, collapse = TRUE}
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
