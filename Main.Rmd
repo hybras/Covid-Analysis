@@ -30,11 +30,47 @@ base_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/raw/maste
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 
 time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
+time_series_US_confirmed <- "./confirmed_US.csv"
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 ```
 
-Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right]$ are dates.
+Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right]$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that. 
 
-```{r state_data}
+```{r clean_data}
+last_column <- length(time_series_US_confirmed)
+num_days <- last_column - 11 # someone needs to explain where this comes from.
 
+# Data is more granular that state, it goes down to town/county. We need to group them together by state.
+by_state <-
+	time_series_US_confirmed %>% select(c(7, 12:all_of(last_column))) %>% group_by(Province_State) %>% summarize_at(vars(2:all_of(num_days)), sum)
+# %>% adorn_totals('row') #idk what this does
+
+# we are using another library for state names. it expects lower cases names
+by_state$Province_State <-
+	tolower(by_state$Province_State)
+
+# get the contiguous/continental us states, including D.C.
+cont_states <-
+	map_data("state")$region %>% unique() 
+# limit ourselves to continental US
+by_state <-
+	by_state %>% filter(Province_State %in%  cont_states) %>% dplyr::rename(region = Province_State) 
+
+# get the dates in the format given to us: XM.DD.YY (the 'X' is a char literal of unknown purpose)
+# Add 1 because we're starting from 2, to get the columns we need
+# 2020/1/22 is the first date in the set
+col_names <- colnames(by_state)[c(2:all_of(num_days + 1))]
+new_col_names <-
+	seq(as.Date("2020/1/22"), by = "day", length.out = num_days)
+by_state <- by_state %>%
+	setNames(new_col_names) %>%
+	dplyr::rename(region = "2020-01-22")
+
+#Prepare data for plotting, flatten the data
+by_state.long_1 <- pivot_longer(
+  by_state,
+  cols = c(2:all_of(num_days)),
+  names_to = "date",
+  values_to = "cases"
+)
 ```
