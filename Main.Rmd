@@ -25,10 +25,16 @@ library(maps)
 Download and read data.
 
 ```{r Initial_Data, collapse = TRUE}
-base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
+base_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 
 time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
+```
+
+Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right]$ are dates.
+
+```{r state_data}
+
 ```
