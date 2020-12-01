@@ -9,8 +9,20 @@ output: html_document
 
 Download data, install packages and load libraries
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, libs, include = FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(gganimate)
+library(gifski)
+library(png)
+library(ggrepel)
+library(scales)
+library(maps)
+```
+
+```{r Initial_Data, collapse = TRUE}
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
