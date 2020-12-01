@@ -34,7 +34,7 @@ time_series_US_confirmed <- "./confirmed_US.csv"
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 ```
 
-Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right]$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that. 
+Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right]$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that.
 
 ```{r clean_data}
 last_column <- length(time_series_US_confirmed)
@@ -51,10 +51,10 @@ by_state$Province_State <-
 
 # get the contiguous/continental us states, including D.C.
 cont_states <-
-	map_data("state")$region %>% unique() 
+	map_data("state")$region %>% unique()
 # limit ourselves to continental US
 by_state <-
-	by_state %>% filter(Province_State %in%  cont_states) %>% dplyr::rename(region = Province_State) 
+	by_state %>% filter(Province_State %in%  cont_states) %>% dplyr::rename(region = Province_State)
 
 # get the dates in the format given to us: XM.DD.YY (the 'X' is a char literal of unknown purpose)
 # Add 1 because we're starting from 2, to get the columns we need
