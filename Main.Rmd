@@ -33,13 +33,15 @@ time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 ```
 
-Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that.
+Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
 
 ```{r clean_data}
 last_column <- length(time_series_US_confirmed)
-num_days <- last_column - 11 # someone needs to explain where this comes from.
 
-# Data is more granular that state, it goes down to town/county. We need to group them together by state.
+# There are 11 columns of data that are not case (mostly related ot location), so the total number of days there is data for will be the length of the dataframe minus 11.
+num_days <- last_column - 11 
+
+# Data is more granular than state, it goes down to town/county. We need to group them together by state.
 by_state <-
 	time_series_US_confirmed %>% select(c(7, 12:all_of(last_column))) %>% group_by(Province_State) %>% summarize_at(vars(2:all_of(num_days)), sum)
 # %>% adorn_totals('row') #idk what this does
@@ -76,7 +78,7 @@ by_state.long_1 <- pivot_longer(
 
 Basic plots lifted from profs code.
 
-```{r gif, echo=F, results='show'}
+```{r plot}
 fav_states <-
 	c("new york", "florida", "texas", "california", "maryland")
 data_fav_states <-
@@ -103,9 +105,12 @@ plot_1 <- data_fav_states %>%
 		axis.title.x = element_text(color = "black", size = 10),
 		axis.title.y = element_text(color = "black", size = 10),
 	)
+plot_1
+```
 
-# And now the time series as a fancy gif.
+And now the time series as a fancy gif.
 
+```{r gif}
 animation_1 <- plot_1 + transition_reveal(as.Date(date))
 animation_1 <- animate(
   animation_1,
@@ -120,23 +125,24 @@ animation_1
 
 The same thing again, but scaled to cases per 100000 people
 
-```{r scaled}
+```{r normalized}
+# Get population information about the states
 census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
 census <- read.csv(census_url)
 census$NAME <- tolower(census$NAME)
 
+# Create a new dataframe to store the scaled data
 data_scaled <-
 	data.frame(region = vector(),
 			   date = vector(),
 			   cases = vector())
 
-# for each selected state it divides the cases by that states
-# population and multiplies by 100,000
+# For each state in the selected list, find that states population, divide all of the case counts by the population and merge the scaled data back into the dataframe
 for (state in fav_states) {
-  data_scaled <- merge(data_scaled,
-                                    mutate(filter(data_fav_states, region == state),
-                                           scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000),
-                                    all = TRUE)
+  data_scaled <- data_fav_states %>% 
+    filter(region == state) %>% 
+    mutate(scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000) %>%
+    merge(data_scaled, all = TRUE)
 }
 ```
 
