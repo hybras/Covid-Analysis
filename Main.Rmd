@@ -146,7 +146,7 @@ Scaled plots. Note: Data appears to be scaled, but plots are not
 plot_2 <- data_scaled %>%
 	ggplot(aes(
 		x = as.Date(date),
-		y = cases,
+		y = adjusted,
 		group = region,
 		color = region
 	)) +
