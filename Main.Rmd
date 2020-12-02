@@ -25,7 +25,7 @@ library(maps)
 Download and read data.
 
 ```{r Initial_Data, collapse = TRUE}
-base_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
+base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 
@@ -73,4 +73,10 @@ by_state.long_1 <- pivot_longer(
   names_to = "date",
   values_to = "cases"
 )
+```
+
+Fit data to population size. I think.
+
+```{r plots}
+
 ```
