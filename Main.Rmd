@@ -1,6 +1,6 @@
 ---
 title: "Main"
-author: "Varun"
+author: "Team 12"
 date: "11/12/2020"
 output: html_document
 ---
@@ -9,14 +9,170 @@ output: html_document
 
 Download data, install packages and load libraries
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r libs, include = FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(gganimate)
+library(gifski)
+library(png)
+library(ggrepel)
+library(scales)
+library(maps)
+```
+
+Download and read data.
+
+```{r Initial_Data, collapse = TRUE}
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
-time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
-print(time_series_US_confirmed)
-time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 
-head(time_series_US_confirmed)
+time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
+time_series_US_confirmed <- read.csv(time_series_US_confirmed)
+```
+
+Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that.
+
+```{r clean_data}
+last_column <- length(time_series_US_confirmed)
+num_days <- last_column - 11 # someone needs to explain where this comes from.
+
+# Data is more granular that state, it goes down to town/county. We need to group them together by state.
+by_state <-
+	time_series_US_confirmed %>% select(c(7, 12:all_of(last_column))) %>% group_by(Province_State) %>% summarize_at(vars(2:all_of(num_days)), sum)
+# %>% adorn_totals('row') #idk what this does
+
+# we are using another library for state names. it expects lower cases names
+by_state$Province_State <-
+	tolower(by_state$Province_State)
+
+# get the contiguous/continental us states, including D.C.
+cont_states <-
+	map_data("state")$region %>% unique()
+# limit ourselves to continental US
+by_state <-
+	by_state %>% filter(Province_State %in%  cont_states) %>% dplyr::rename(region = Province_State)
+
+# get the dates in the format given to us: XM.DD.YY (the 'X' is a char literal of unknown purpose)
+# Add 1 because we're starting from 2, to get the columns we need
+# 2020/1/22 is the first date in the set
+col_names <- colnames(by_state)[c(2:all_of(num_days + 1))]
+new_col_names <-
+	seq(as.Date("2020/1/22"), by = "day", length.out = num_days)
+by_state <- by_state %>%
+	setNames(new_col_names) %>%
+	dplyr::rename(region = "2020-01-22")
+
+#Prepare data for plotting, flatten the data
+by_state.long_1 <- pivot_longer(
+  by_state,
+  cols = c(2:all_of(num_days)),
+  names_to = "date",
+  values_to = "cases"
+)
+```
+
+Basic plots lifted from profs code.
+
+```{r gif, echo=F, results='show'}
+fav_states <-
+	c("new york", "florida", "texas", "california", "maryland")
+data_fav_states <-
+	by_state.long_1 %>% filter(region %in% fav_states)
+
+plot_1 <- data_fav_states %>%
+	ggplot(aes(
+		x = as.Date(date),
+		y = cases,
+		group = region,
+		color = region
+	)) +
+	labs(title = "Confirmed Cases vs Time",
+		 x = "Date",
+		 y = "Number of Cases") +
+	geom_line() +
+	# Assuming the data goes up to yesterday.
+	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				 date_breaks = "1 month",
+				 date_labels = "%B") +
+	scale_y_continuous(labels = scales::comma) +
+	theme(
+		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
+		axis.title.x = element_text(color = "black", size = 10),
+		axis.title.y = element_text(color = "black", size = 10),
+	)
+
+# And now the time series as a fancy gif.
+
+animation_1 <- plot_1 + transition_reveal(as.Date(date))
+animation_1 <- animate(
+  animation_1,
+  width = 750,
+  height = 650,
+  duration = 20,
+  end_pause = 20,
+  renderer = gifski_renderer()
+)
+animation_1
+```
+
+The same thing again, but scaled to cases per 100000 people
+
+```{r scaled}
+census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
+census <- read.csv(census_url)
+census$NAME <- tolower(census$NAME)
+
+data_scaled <-
+	data.frame(region = vector(),
+			   date = vector(),
+			   cases = vector())
+
+# for each selected state it divides the cases by that states
+# population and multiplies by 100,000
+for (state in fav_states) {
+  data_scaled <- merge(data_scaled,
+                                    mutate(filter(data_fav_states, region == state),
+                                           scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000),
+                                    all = TRUE)
+}
+```
+
+Scaled plots.
+
+```{r scaled_gif}
+plot_2 <- data_scaled %>%
+	ggplot(aes(
+		x = as.Date(date),
+		y = scaled_cases,
+		group = region,
+		color = region
+	)) +
+	labs(title = "Confirmed Cases per 100,000 People vs Time",
+		 x = "Date",
+		 y = "Number of Cases") +
+	geom_line() +
+	# Assuming the data goes up to yesterday.
+	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				 date_breaks = "1 month",
+				 date_labels = "%B") +
+	scale_y_continuous(labels = scales::comma) +
+	theme(
+		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
+		axis.title.x = element_text(color = "black", size = 10),
+		axis.title.y = element_text(color = "black", size = 10),
+	)
+
+animation_2 <- plot_2 + transition_reveal(as.Date(date))
+animation_2 <- animate(
+  animation_2,
+  width = 750,
+  height = 650,
+  duration = 20,
+  end_pause = 20,
+  renderer = gifski_renderer()
+)
+animation_2
 ```
