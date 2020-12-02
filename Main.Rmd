@@ -182,3 +182,28 @@ animation_2 <- animate(
 )
 animation_2
 ```
+
+Google trends data on top of case data
+
+```{r}
+
+path <- ".\\lockdownTrend.txt"
+lockdown_data <- read.csv(path)
+lockdown_dates <- as.Date(lockdown_data$Week, "%Y-%m-%d")
+
+plot_3 <- ggplot() + 
+  labs(title = "Confirmed Cases per 100,000 People vs Time and Lockdown Trend",
+		 x = "Date",
+		 y = "Number of Cases") +
+  geom_line(data = lockdown_data, aes(x = lockdown_dates, y =lockdown * 25), size = 2) +
+  geom_line(data = data_scaled, aes(
+		x = as.Date(date),
+		y = scaled_cases,
+		group = region,
+		color = region
+	))
+
+plot_3
+
+```
+
