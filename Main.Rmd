@@ -76,7 +76,7 @@ by_state.long_1 <- pivot_longer(
 
 Basic plots lifted from profs code.
 
-```{r gif}
+```{r gif, echo=F, results='show'}
 fav_states <-
 	c("new york", "florida", "texas", "california", "maryland")
 data_fav_states <-
@@ -135,22 +135,22 @@ data_scaled <-
 for (state in fav_states) {
   data_scaled <- merge(data_scaled,
                                     mutate(filter(data_fav_states, region == state),
-                                           adjusted = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000),
+                                           scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000),
                                     all = TRUE)
 }
 ```
 
-Scaled plots. Note: Data appears to be scaled, but plots are not
+Scaled plots.
 
 ```{r scaled_gif}
 plot_2 <- data_scaled %>%
 	ggplot(aes(
 		x = as.Date(date),
-		y = adjusted,
+		y = scaled_cases,
 		group = region,
 		color = region
 	)) +
-	labs(title = "Confirmed Cases vs Time",
+	labs(title = "Confirmed Cases per 100,000 People vs Time",
 		 x = "Date",
 		 y = "Number of Cases") +
 	geom_line() +
