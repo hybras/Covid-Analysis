@@ -120,7 +120,7 @@ animation_1
 
 The same thing again, but scaled to cases per 100000 people
 
-```{r normalized}
+```{r scaled}
 census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
 census <- read.csv(census_url)
 census$NAME <- tolower(census$NAME)
