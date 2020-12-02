@@ -120,3 +120,62 @@ animation_1 <- animate(
 )
 animation_1
 ```
+
+The same thing again, but scaled to cases per 100000 people
+
+```{r normalized}
+census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
+census <- read.csv(census_url)
+census$NAME <- tolower(census$NAME)
+
+data_scaled <-
+	data.frame(region = vector(),
+			   date = vector(),
+			   cases = vector())
+
+# for each selected state it divides the cases by that states
+# population and multiplies by 100,000
+for (state in fav_states) {
+  data_scaled <- merge(data_scaled,
+                                    mutate(filter(data_fav_states, region == state),
+                                           adjusted = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000),
+                                    all = TRUE)
+}
+```
+
+Scaled plots. Note: Data appears to be scaled, but plots are not
+
+```{r scaled_gif}
+plot_2 <- data_scaled %>%
+	ggplot(aes(
+		x = as.Date(date),
+		y = cases,
+		group = region,
+		color = region
+	)) +
+	labs(title = "Confirmed Cases vs Time",
+		 x = "Date",
+		 y = "Number of Cases") +
+	geom_line() +
+	# Assuming the data goes up to yesterday.
+	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				 date_breaks = "1 month",
+				 date_labels = "%B") +
+	scale_y_continuous(labels = scales::comma) +
+	theme(
+		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
+		axis.title.x = element_text(color = "black", size = 10),
+		axis.title.y = element_text(color = "black", size = 10),
+	)
+
+animation_2 <- plot_2 + transition_reveal(as.Date(date))
+animation_2 <- animate(
+  animation_2,
+  width = 750,
+  height = 650,
+  duration = 20,
+  end_pause = 20,
+  renderer = gifski_renderer()
+)
+animation_2
+```
