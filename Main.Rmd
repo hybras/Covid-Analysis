@@ -30,11 +30,10 @@ base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 
 time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
-time_series_US_confirmed <- "./confirmed_US.csv"
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 ```
 
-Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right]$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that.
+Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular that state, it goes down to town/county. We need to fix that.
 
 ```{r clean_data}
 last_column <- length(time_series_US_confirmed)
@@ -75,8 +74,50 @@ by_state.long_1 <- pivot_longer(
 )
 ```
 
-Fit data to population size. I think.
+Basic plots lifted from profs code.
 
 ```{r plots}
+fav_states <-
+	c("new york", "florida", "texas", "california", "maryland")
+data_fav_states <-
+	by_state.long_1 %>% filter(region %in% fav_states)
 
+plot_1 <- data_fav_states %>%
+	ggplot(aes(
+		x = as.Date(date),
+		y = cases,
+		group = region,
+		color = region
+	)) +
+	labs(title = "Confirmed Cases vs Time",
+		 x = "Date",
+		 y = "Number of Cases") +
+	geom_line() +
+	# Assuming the data goes up to yesterday.
+	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				 date_breaks = "1 month",
+				 date_labels = "%B") +
+	scale_y_continuous(labels = scales::comma) +
+	theme(
+		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
+		axis.title.x = element_text(color = "black", size = 10),
+		axis.title.y = element_text(color = "black", size = 10),
+	)
+
+plot_1
+```
+
+And now the time series as a fancy gif.
+
+```{r gif}
+animation_1 <- plot_1 + transition_reveal(as.Date(date))
+animation_1 <- animate(
+  animation_1,
+  width = 750,
+  height = 650,
+  duration = 20,
+  end_pause = 20,
+  renderer = gifski_renderer()
+)
+animation_1
 ```
