@@ -76,7 +76,7 @@ by_state.long_1 <- pivot_longer(
 
 Basic plots lifted from profs code.
 
-```{r plot}
+```{r gif}
 fav_states <-
 	c("new york", "florida", "texas", "california", "maryland")
 data_fav_states <-
@@ -103,12 +103,9 @@ plot_1 <- data_fav_states %>%
 		axis.title.x = element_text(color = "black", size = 10),
 		axis.title.y = element_text(color = "black", size = 10),
 	)
-plot_1
-```
 
-And now the time series as a fancy gif.
+# And now the time series as a fancy gif.
 
-```{r gif}
 animation_1 <- plot_1 + transition_reveal(as.Date(date))
 animation_1 <- animate(
   animation_1,
