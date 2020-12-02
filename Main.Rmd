@@ -9,7 +9,7 @@ output: html_document
 
 Download data, install packages and load libraries
 
-```{r, libs, include = FALSE}
+```{r libs, include = FALSE}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -76,7 +76,7 @@ by_state.long_1 <- pivot_longer(
 
 Basic plots lifted from profs code.
 
-```{r plots}
+```{r plot}
 fav_states <-
 	c("new york", "florida", "texas", "california", "maryland")
 data_fav_states <-
@@ -103,7 +103,6 @@ plot_1 <- data_fav_states %>%
 		axis.title.x = element_text(color = "black", size = 10),
 		axis.title.y = element_text(color = "black", size = 10),
 	)
-
 plot_1
 ```
 
