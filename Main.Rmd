@@ -7,8 +7,7 @@ output:
     code_folding: hide
 ---
 
-NOTE: All code blocks are folded by default. Access by clicking code button next to the text block. 
-(Or open all at once with the button on the top right)
+NOTE: All code blocks are folded by default. Access by clicking code button next to the text block. (Or open all at once with the button on the top right)
 
 ## Setup
 
@@ -46,7 +45,7 @@ Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Colu
 last_column <- length(time_series_US_confirmed)
 
 # There are 11 columns of data that are not case (mostly related ot location), so the total number of days there is data for will be the length of the dataframe minus 11.
-num_days <- last_column - 11 
+num_days <- last_column - 11
 
 # Data is more granular than state, it goes down to town/county. We need to group them together by state.
 by_state <-
@@ -146,8 +145,8 @@ data_scaled <-
 
 # For each state in the selected list, find that states population, divide all of the case counts by the population and merge the scaled data back into the dataframe
 for (state in fav_states) {
-  data_scaled <- data_fav_states %>% 
-    filter(region == state) %>% 
+  data_scaled <- data_fav_states %>%
+    filter(region == state) %>%
     mutate(scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000) %>%
     merge(data_scaled, all = TRUE)
 }
@@ -191,6 +190,7 @@ animation_2
 ```
 
 Helper function that plots covid case with stay at home order overlayed
+
 ```{r}
 plot_legislation_overlay <- function (state, legislation, statecolor, legislationcolor) {
   # first letter of state should be capatialized (eg. "Maryland")
@@ -214,7 +214,7 @@ plot_legislation_overlay <- function (state, legislation, statecolor, legislatio
   }
   state = tolower(state)
   state_data <- by_state.long_1 %>% filter(region == state)
-  plot <- state_data %>% 
+  plot <- state_data %>%
     ggplot(aes(
       x = as.Date(date),
       y = cases
@@ -222,7 +222,7 @@ plot_legislation_overlay <- function (state, legislation, statecolor, legislatio
     labs(title = paste(paste(paste("COVID case data with", legislation_matrix[legislation], sep=" "), "overlayed -", sep=" "), state, sep=" "),
          x = "Date",
          y = "Number of Cases") +
-    geom_line(color = statecolor) + 
+    geom_line(color = statecolor) +
     scale_x_date(limits = c(as.Date("2020-3-01"), as.Date("2020-7-31")),
                  date_breaks = "1 month",
                  date_labels = "%B") +
