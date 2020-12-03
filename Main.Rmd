@@ -80,6 +80,31 @@ by_state.long_1 <- pivot_longer(
   names_to = "date",
   values_to = "cases"
 )
+
+# Helper function to generate plots. Can be animated.
+plot_cases <- function(cases, scaled = FALSE, start_date=as.Date("2020-1-22"), end_date=Sys.Date() - 1) {
+	plot_1 <- cases %>% ggplot(aes(
+		x = as.Date(date),
+		y = if (scaled) scaled_cases else cases,
+		group = region,
+		color = region
+	)) +
+	labs(title = "Confirmed Cases vs Time",
+		 x = "Date",
+		 y = "Number of Cases") +
+	geom_line() +
+	# Assuming the data goes up to yesterday.
+	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				 date_breaks = "1 month",
+				 date_labels = "%B") +
+	scale_y_continuous(labels = scales::comma) +
+	theme(
+		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
+		axis.title.x = element_text(color = "black", size = 10),
+		axis.title.y = element_text(color = "black", size = 10),
+	)
+	return(plot_1)
+}
 ```
 
 Basic plots lifted from profs code.
@@ -191,48 +216,80 @@ animation_2
 
 Helper function that plots covid case with stay at home order overlayed
 
-```{r}
-plot_legislation_overlay <- function (state, legislation, statecolor, legislationcolor) {
-  # first letter of state should be capatialized (eg. "Maryland")
-  # legislation is neumeric - see following
-  # 1 = stay at home order, 2 = mandatory quarantine for travelers, 3 = non essential business closures
-  # 4 = large gatherings ban, 5 = school closures, 6 = restaurant limits
-  legislation_matrix = c("stay at home order", "mandatory quarantine for travelers", "non essential business closures", "large gatherings ban", "school closures", "restaurant limits")
-  state_legis_data <- social_distancing %>% filter(State == state)
-  les_start = state_legis_data[legislation+1][[1]]
-  les_end = state_legis_data[legislation+9][[1]]
-  not_enacted = FALSE
-  # check whether date is valid or NA
-  if(les_start == "-") { # legislation was never enacted
-    not_enacted = TRUE
-  } else if(les_end == "-") { # legislation was never lifted
-    les_start = as.Date(les_start, format="%d-%b")
-    les_end = as.Date("2077-4-02")
-  } else {
-    les_start = as.Date(les_start, format="%d-%b")
-    les_end = as.Date(les_end, format="%d-%b")
-  }
-  state = tolower(state)
-  state_data <- by_state.long_1 %>% filter(region == state)
-  plot <- state_data %>%
-    ggplot(aes(
-      x = as.Date(date),
-      y = cases
-    )) +
-    labs(title = paste(paste(paste("COVID case data with", legislation_matrix[legislation], sep=" "), "overlayed -", sep=" "), state, sep=" "),
-         x = "Date",
-         y = "Number of Cases") +
-    geom_line(color = statecolor) +
-    scale_x_date(limits = c(as.Date("2020-3-01"), as.Date("2020-7-31")),
-                 date_breaks = "1 month",
-                 date_labels = "%B") +
-    scale_y_continuous(labels = scales::comma) +
-    theme(
-  		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
-  		axis.title.x = element_text(color = "black", size = 10),
-  		axis.title.y = element_text(color = "black", size = 10),
-  	)
-  
-  if(not_enacted) plot else plot + annotate("rect", xmin=les_start, xmax=les_end, ymin=0, ymax=Inf, alpha=0.2, fill=legislationcolor)
+```{r stay_at_home}
+plot_legislation_overlay <-
+	function (state,
+			  legislation,
+			  statecolor,
+			  legislationcolor) {
+		# first letter of state should be capitalized (eg. "Maryland")
+		# legislation is numeric - see following
+		# 1 = stay at home order, 2 = mandatory quarantine for travelers, 3 = non essential business closures
+		# 4 = large gatherings ban, 5 = school closures, 6 = restaurant limits
+		legislation_matrix = c(
+			"stay at home order",
+			"mandatory quarantine for travelers",
+			"non essential business closures",
+			"large gatherings ban",
+			"school closures",
+			"restaurant limits"
+		)
+		state_legis_data <- social_distancing %>% filter(State == state)
+		les_start = state_legis_data[legislation + 1][[1]]
+		les_end = state_legis_data[legislation + 9][[1]]
+		not_enacted = FALSE
+		# check whether date is valid or NA
+		if (les_start == "-") {
+			# legislation was never enacted
+			not_enacted = TRUE
+		} else if (les_end == "-") {
+			# legislation was never lifted
+			les_start = as.Date(les_start, format = "%d-%b")
+			les_end = as.Date("2077-4-02")
+		} else {
+			les_start = as.Date(les_start, format = "%d-%b")
+			les_end = as.Date(les_end, format = "%d-%b")
+		}
+		state = tolower(state)
+		state_data <- by_state.long_1 %>% filter(region == state)
+		plot <- state_data %>%
+			ggplot(aes(x = as.Date(date),
+					   y = cases)) +
+			labs(title = paste(paste(
+				paste("COVID case data with", legislation_matrix[legislation], sep = " "),
+				"overlayed -",
+				sep = " "
+			), state, sep = " "),
+			x = "Date",
+			y = "Number of Cases") +
+			geom_line(color = statecolor) +
+			scale_x_date(
+				limits = c(as.Date("2020-3-01"), as.Date("2020-7-31")),
+				date_breaks = "1 month",
+				date_labels = "%B"
+			) +
+			scale_y_continuous(labels = scales::comma) +
+			theme(
+				plot.title = element_text(
+					color = "black",
+					size = 14,
+					face = "bold.italic"
+				),
+				axis.title.x = element_text(color = "black", size = 10),
+				axis.title.y = element_text(color = "black", size = 10),
+			)
+		
+		if (not_enacted)
+			plot
+		else
+			plot + annotate(
+				"rect",
+				xmin = les_start,
+				xmax = les_end,
+				ymin = 0,
+				ymax = Inf,
+				alpha = 0.2,
+				fill = legislationcolor
+			)
 }
 ```
