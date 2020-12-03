@@ -13,7 +13,7 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 
 Download data, install packages and load libraries
 
-```{r libs, include = FALSE}
+```{r libs}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -28,7 +28,7 @@ library(maps)
 
 Download and read data.
 
-```{r Initial_Data, collapse = TRUE}
+```{r Initial_Data}
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
@@ -131,12 +131,9 @@ data_fav_states <-
 
 plot_1 <- data_fav_states %>%
 	plot_cases()
-plot_1
-```
 
-And now the time series as a fancy gif.
+# And now the time series as a fancy gif.
 
-```{r gif}
 animation_1 <- plot_1 + transition_reveal(as.Date(date))
 animation_1 <- animate(
   animation_1,
