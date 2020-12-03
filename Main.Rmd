@@ -196,7 +196,6 @@ Helper function that plots covid case with stay at home order overlayed
 plot_legislation_overlay <-
 	function (state,
 			  legislation,
-			  statecolor,
 			  legislationcolor) {
 		# first letter of state should be capitalized (eg. "Maryland")
 		# legislation is numeric - see following
@@ -228,31 +227,16 @@ plot_legislation_overlay <-
 		}
 		state = tolower(state)
 		state_data <- by_state.long_1 %>% filter(region == state)
+		
 		plot <- state_data %>%
-			ggplot(aes(x = as.Date(date),
-					   y = cases)) +
-			labs(title = paste(paste(
-				paste("COVID case data with", legislation_matrix[legislation], sep = " "),
-				"overlayed -",
-				sep = " "
-			), state, sep = " "),
-			x = "Date",
-			y = "Number of Cases") +
-			geom_line(color = statecolor) +
-			scale_x_date(
-				limits = c(as.Date("2020-3-01"), as.Date("2020-7-31")),
-				date_breaks = "1 month",
-				date_labels = "%B"
-			) +
-			scale_y_continuous(labels = scales::comma) +
-			theme(
-				plot.title = element_text(
-					color = "black",
-					size = 14,
-					face = "bold.italic"
-				),
-				axis.title.x = element_text(color = "black", size = 10),
-				axis.title.y = element_text(color = "black", size = 10),
+			plot_cases(
+				title = paste(paste(
+					paste("COVID case data with", legislation_matrix[legislation], sep = " "),
+					"overlayed -",
+					sep = " "
+				), state, sep = " "),
+				start_date = as.Date("2020-3-01"),
+				end_date = as.Date("2020-7-31")
 			)
 		
 		if (not_enacted)
@@ -267,5 +251,5 @@ plot_legislation_overlay <-
 				alpha = 0.2,
 				fill = legislationcolor
 			)
-}
+	}
 ```
