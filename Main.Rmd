@@ -82,29 +82,43 @@ by_state.long_1 <- pivot_longer(
 )
 
 # Helper function to generate plots. Can be animated.
-plot_cases <- function(cases, scaled = FALSE, start_date=as.Date("2020-1-22"), end_date=Sys.Date() - 1) {
-	plot_1 <- cases %>% ggplot(aes(
-		x = as.Date(date),
-		y = if (scaled) scaled_cases else cases,
-		group = region,
-		color = region
-	)) +
-	labs(title = "Confirmed Cases vs Time",
-		 x = "Date",
-		 y = "Number of Cases") +
-	geom_line() +
-	# Assuming the data goes up to yesterday.
-	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
-				 date_breaks = "1 month",
-				 date_labels = "%B") +
-	scale_y_continuous(labels = scales::comma) +
-	theme(
-		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
-		axis.title.x = element_text(color = "black", size = 10),
-		axis.title.y = element_text(color = "black", size = 10),
-	)
-	return(plot_1)
-}
+plot_cases <-
+	function(cases,
+			 scaled = FALSE,
+			 start_date = as.Date("2020-1-22"),
+			 end_date = Sys.Date() - 1,
+			 title = "Confirmed Cases vs Time") {
+		plot_1 <- cases %>% ggplot(aes(
+			x = as.Date(date),
+			y = if (scaled)
+				scaled_cases
+			else
+				cases,
+			group = region,
+			color = region
+		)) +
+			labs(title,
+				 x = "Date",
+				 y = "Number of Cases") +
+			geom_line() +
+			# Assuming the data goes up to yesterday.
+			scale_x_date(
+				limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				date_breaks = "1 month",
+				date_labels = "%B"
+			) +
+			scale_y_continuous(labels = scales::comma) +
+			theme(
+				plot.title = element_text(
+					color = "black",
+					size = 14,
+					face = "bold.italic"
+				),
+				axis.title.x = element_text(color = "black", size = 10),
+				axis.title.y = element_text(color = "black", size = 10),
+			)
+		return(plot_1)
+	}
 ```
 
 Basic plots lifted from profs code.
@@ -116,26 +130,7 @@ data_fav_states <-
 	by_state.long_1 %>% filter(region %in% fav_states)
 
 plot_1 <- data_fav_states %>%
-	ggplot(aes(
-		x = as.Date(date),
-		y = cases,
-		group = region,
-		color = region
-	)) +
-	labs(title = "Confirmed Cases vs Time",
-		 x = "Date",
-		 y = "Number of Cases") +
-	geom_line() +
-	# Assuming the data goes up to yesterday.
-	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
-				 date_breaks = "1 month",
-				 date_labels = "%B") +
-	scale_y_continuous(labels = scales::comma) +
-	theme(
-		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
-		axis.title.x = element_text(color = "black", size = 10),
-		axis.title.y = element_text(color = "black", size = 10),
-	)
+	plot_cases()
 plot_1
 ```
 
@@ -181,26 +176,7 @@ Scaled plots.
 
 ```{r scaled_gif}
 plot_2 <- data_scaled %>%
-	ggplot(aes(
-		x = as.Date(date),
-		y = scaled_cases,
-		group = region,
-		color = region
-	)) +
-	labs(title = "Confirmed Cases per 100,000 People vs Time",
-		 x = "Date",
-		 y = "Number of Cases") +
-	geom_line() +
-	# Assuming the data goes up to yesterday.
-	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
-				 date_breaks = "1 month",
-				 date_labels = "%B") +
-	scale_y_continuous(labels = scales::comma) +
-	theme(
-		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
-		axis.title.x = element_text(color = "black", size = 10),
-		axis.title.y = element_text(color = "black", size = 10),
-	)
+	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
 animation_2 <- plot_2 + transition_reveal(as.Date(date))
 animation_2 <- animate(
