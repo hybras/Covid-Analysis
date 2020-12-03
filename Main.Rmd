@@ -7,9 +7,6 @@ output:
     code_folding: hide
 ---
 
-NOTE: All code blocks are folded by default. Access by clicking code button next to the text block.  
-(Or open all at once with the button on the top right)
-
 ## Setup
 
 Download data, install packages and load libraries
