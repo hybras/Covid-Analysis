@@ -11,7 +11,7 @@ output:
 
 Download data, install packages and load libraries
 
-```{r libs}
+```{r libs, include = FALSE}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
