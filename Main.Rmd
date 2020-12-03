@@ -2,14 +2,18 @@
 title: "Main"
 author: "Team 12"
 date: "11/12/2020"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
+
+NOTE: All code blocks are folded by default. Access by clicking code button next to the text block. (Or open all at once with the button on the top right)
 
 ## Setup
 
 Download data, install packages and load libraries
 
-```{r libs, include = FALSE}
+```{r libs}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -24,13 +28,15 @@ library(maps)
 
 Download and read data.
 
-```{r Initial_Data, collapse = TRUE}
+```{r Initial_Data}
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
 
 time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
+
+social_distancing = read.csv("./legislation-data/social_distancing_history_march_to_july_inclusive.csv")
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
@@ -74,6 +80,45 @@ by_state.long_1 <- pivot_longer(
   names_to = "date",
   values_to = "cases"
 )
+
+# Helper function to generate plots. Can be animated.
+plot_cases <-
+	function(cases,
+			 scaled = FALSE,
+			 start_date = as.Date("2020-1-22"),
+			 end_date = Sys.Date() - 1,
+			 title = "Confirmed Cases vs Time") {
+		plot_1 <- cases %>% ggplot(aes(
+			x = as.Date(date),
+			y = if (scaled)
+				scaled_cases
+			else
+				cases,
+			group = region,
+			color = region
+		)) +
+			labs(title,
+				 x = "Date",
+				 y = "Number of Cases") +
+			geom_line() +
+			# Assuming the data goes up to yesterday.
+			scale_x_date(
+				limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				date_breaks = "1 month",
+				date_labels = "%B"
+			) +
+			scale_y_continuous(labels = scales::comma) +
+			theme(
+				plot.title = element_text(
+					color = "black",
+					size = 14,
+					face = "bold.italic"
+				),
+				axis.title.x = element_text(color = "black", size = 10),
+				axis.title.y = element_text(color = "black", size = 10),
+			)
+		return(plot_1)
+	}
 ```
 
 Basic plots lifted from profs code.
@@ -85,32 +130,10 @@ data_fav_states <-
 	by_state.long_1 %>% filter(region %in% fav_states)
 
 plot_1 <- data_fav_states %>%
-	ggplot(aes(
-		x = as.Date(date),
-		y = cases,
-		group = region,
-		color = region
-	)) +
-	labs(title = "Confirmed Cases vs Time",
-		 x = "Date",
-		 y = "Number of Cases") +
-	geom_line() +
-	# Assuming the data goes up to yesterday.
-	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
-				 date_breaks = "1 month",
-				 date_labels = "%B") +
-	scale_y_continuous(labels = scales::comma) +
-	theme(
-		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
-		axis.title.x = element_text(color = "black", size = 10),
-		axis.title.y = element_text(color = "black", size = 10),
-	)
-plot_1
-```
+	plot_cases()
 
-And now the time series as a fancy gif.
+# And now the time series as a fancy gif.
 
-```{r gif}
 animation_1 <- plot_1 + transition_reveal(as.Date(date))
 animation_1 <- animate(
   animation_1,
@@ -150,26 +173,7 @@ Scaled plots.
 
 ```{r scaled_gif}
 plot_2 <- data_scaled %>%
-	ggplot(aes(
-		x = as.Date(date),
-		y = scaled_cases,
-		group = region,
-		color = region
-	)) +
-	labs(title = "Confirmed Cases per 100,000 People vs Time",
-		 x = "Date",
-		 y = "Number of Cases") +
-	geom_line() +
-	# Assuming the data goes up to yesterday.
-	scale_x_date(limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
-				 date_breaks = "1 month",
-				 date_labels = "%B") +
-	scale_y_continuous(labels = scales::comma) +
-	theme(
-		plot.title = element_text(color = "black", size = 14, face = "bold.italic"),
-		axis.title.x = element_text(color = "black", size = 10),
-		axis.title.y = element_text(color = "black", size = 10),
-	)
+	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
 animation_2 <- plot_2 + transition_reveal(as.Date(date))
 animation_2 <- animate(
@@ -185,7 +189,7 @@ animation_2
 
 Google trends data on top of case data
 
-```{r}
+```{r gtrends}
 
 path <- ".\\lockdownTrend.csv"
 lockdown_data <- read.csv(path)
@@ -204,5 +208,66 @@ plot_3 <- ggplot() +
 	))
 
 plot_3
+```
 
+```{r stay_at_home}
+plot_legislation_overlay <-
+	function (state,
+			  legislation,
+			  legislationcolor) {
+		# first letter of state should be capitalized (eg. "Maryland")
+		# legislation is numeric - see following
+		# 1 = stay at home order, 2 = mandatory quarantine for travelers, 3 = non essential business closures
+		# 4 = large gatherings ban, 5 = school closures, 6 = restaurant limits
+		legislation_matrix = c(
+			"stay at home order",
+			"mandatory quarantine for travelers",
+			"non essential business closures",
+			"large gatherings ban",
+			"school closures",
+			"restaurant limits"
+		)
+		state_legis_data <- social_distancing %>% filter(State == state)
+		les_start = state_legis_data[legislation + 1][[1]]
+		les_end = state_legis_data[legislation + 9][[1]]
+		not_enacted = FALSE
+		# check whether date is valid or NA
+		if (les_start == "-") {
+			# legislation was never enacted
+			not_enacted = TRUE
+		} else if (les_end == "-") {
+			# legislation was never lifted
+			les_start = as.Date(les_start, format = "%d-%b")
+			les_end = as.Date("2077-4-02")
+		} else {
+			les_start = as.Date(les_start, format = "%d-%b")
+			les_end = as.Date(les_end, format = "%d-%b")
+		}
+		state = tolower(state)
+		state_data <- by_state.long_1 %>% filter(region == state)
+		
+		plot <- state_data %>%
+			plot_cases(
+				title = paste(paste(
+					paste("COVID case data with", legislation_matrix[legislation], sep = " "),
+					"overlayed -",
+					sep = " "
+				), state, sep = " "),
+				start_date = as.Date("2020-3-01"),
+				end_date = as.Date("2020-7-31")
+			)
+		
+		if (not_enacted)
+			plot
+		else
+			plot + annotate(
+				"rect",
+				xmin = les_start,
+				xmax = les_end,
+				ymin = 0,
+				ymax = Inf,
+				alpha = 0.2,
+				fill = legislationcolor
+			)
+	}
 ```
