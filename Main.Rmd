@@ -2,14 +2,19 @@
 title: "Main"
 author: "Team 12"
 date: "11/12/2020"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
+
+NOTE: All code blocks are folded by default. Access by clicking code button next to the text block.  
+(Or open all at once with the button on the top right)
 
 ## Setup
 
 Download data, install packages and load libraries
 
-```{r libs, include = FALSE}
+```{r libs}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -24,7 +29,7 @@ library(maps)
 
 Download and read data.
 
-```{r Initial_Data, collapse = TRUE}
+```{r Initial_Data}
 base_url <- "https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/"
 
 time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
@@ -39,7 +44,7 @@ Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Colu
 last_column <- length(time_series_US_confirmed)
 
 # There are 11 columns of data that are not case (mostly related ot location), so the total number of days there is data for will be the length of the dataframe minus 11.
-num_days <- last_column - 11 
+num_days <- last_column - 11
 
 # Data is more granular than state, it goes down to town/county. We need to group them together by state.
 by_state <-
@@ -139,8 +144,8 @@ data_scaled <-
 
 # For each state in the selected list, find that states population, divide all of the case counts by the population and merge the scaled data back into the dataframe
 for (state in fav_states) {
-  data_scaled <- data_fav_states %>% 
-    filter(region == state) %>% 
+  data_scaled <- data_fav_states %>%
+    filter(region == state) %>%
     mutate(scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000) %>%
     merge(data_scaled, all = TRUE)
 }
