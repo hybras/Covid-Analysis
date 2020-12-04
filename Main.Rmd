@@ -202,7 +202,7 @@ plot_2 <- scale_data(fav_states, data_fav_states) %>%
 animate_plot(plot_2)
 ```
 
-Google trends data on top of case data
+Function to plot Google trends data on top of case data, and overlay lockdown types onto cases
 
 ```{r gtrends}
 
