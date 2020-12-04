@@ -14,6 +14,7 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 Download data, install packages and load libraries
 
 ```{r libs, include = FALSE}
+
 # disables animation rendering when set to TRUE for faster compilation when testing
 # make sure this stays FALSE when committing!!!!!
 disable_animation_render = FALSE
@@ -197,6 +198,7 @@ animate_plot(plot_2 + transition_reveal(as.Date(date)))
 Google trends data on top of case data
 
 ```{r gtrends}
+
 
 path <- "./data/lockdownTrendData.csv"
 lockdown_data <- read.csv(path)
