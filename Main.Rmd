@@ -134,16 +134,16 @@ plot_1 <- data_fav_states %>%
 
 # And now the time series as a fancy gif.
 
-animation_1 <- plot_1 + transition_reveal(as.Date(date))
-animation_1 <- animate(
-  animation_1,
-  width = 750,
-  height = 650,
-  duration = 20,
-  end_pause = 20,
-  renderer = gifski_renderer()
-)
-animation_1
+# animation_1 <- plot_1 + transition_reveal(as.Date(date))
+# animation_1 <- animate(
+#   animation_1,
+#   width = 750,
+#   height = 650,
+#   duration = 20,
+#   end_pause = 20,
+#   renderer = gifski_renderer()
+# )
+# animation_1
 ```
 
 The same thing again, but scaled to cases per 100000 people
@@ -160,54 +160,58 @@ data_scaled <-
 			   date = vector(),
 			   cases = vector())
 
-# For each state in the selected list, find that states population, divide all of the case counts by the population and merge the scaled data back into the dataframe
-for (state in fav_states) {
-  data_scaled <- data_fav_states %>%
+# For each state, find that states population, divide all of the case counts by the population and merge the scaled data back into the dataframe
+for (state in cont_states) {
+  data_scaled <- by_state.long_1 %>%
     filter(region == state) %>%
     mutate(scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000) %>%
     merge(data_scaled, all = TRUE)
 }
+
+fav_states_scaled <- data_scaled %>% filter(region == fav_states)
 ```
 
 Scaled plots.
 
 ```{r scaled_gif}
-plot_2 <- data_scaled %>%
+plot_2 <- fav_states_scaled %>%
 	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
-animation_2 <- plot_2 + transition_reveal(as.Date(date))
-animation_2 <- animate(
-  animation_2,
-  width = 750,
-  height = 650,
-  duration = 20,
-  end_pause = 20,
-  renderer = gifski_renderer()
-)
-animation_2
+# animation_2 <- plot_2 + transition_reveal(as.Date(date))
+# animation_2 <- animate(
+#   animation_2,
+#   width = 750,
+#   height = 650,
+#   duration = 20,
+#   end_pause = 20,
+#   renderer = gifski_renderer()
+# )
+# animation_2
 ```
 
 Google trends data on top of case data
 
 ```{r gtrends}
 
-path <- "./data/lockdownTrend.csv"
-lockdown_data <- read.csv(path)
-lockdown_dates <- as.Date(lockdown_data$Week, "%Y-%m-%d")
+plot_trends_data <- function(states, path) {
+  
+  plot <- fav_states_scaled %>%
+    plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
+  
+  trends_data <- read.csv(path)
+  
+  plot <- plot + geom_line(data = trends_data,
+                   inherit.aes = FALSE,
+                   aes(x = as.Date(trends_data[, 1], "%Y-%m-%d"),
+                       y = trends_data[, 2] * 25),
+                   size = 2)
+  return(plot)
+}
 
-plot_3 <- ggplot() +
-  labs(title = "Confirmed Cases per 100,000 People vs Time and Lockdown Trend",
-		 x = "Date",
-		 y = "Number of Cases") +
-  geom_line(data = lockdown_data, aes(x = lockdown_dates, y =lockdown * 25), size = 2) +
-  geom_line(data = data_scaled, aes(
-		x = as.Date(date),
-		y = scaled_cases,
-		group = region,
-		color = region
-	))
+path_1 <- "https://raw.githubusercontent.com/hybras/Covid-Analysis/legislation-overlay-scaled/data/covidTrendData.csv?token=AKOM6X7MITS3J2OPSUSE43272LGUO"
+x <- plot_trends_data(fav_states, path_1)
+x
 
-plot_3
 ```
 
 ```{r stay_at_home}
