@@ -13,7 +13,7 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 
 Download data, install packages and load libraries
 
-```{r libs}
+```{r libs, include = FALSE}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
