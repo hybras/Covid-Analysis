@@ -193,7 +193,6 @@ plot_1 <- data_fav_states %>%
 animate_plot(plot_1)
 ```
 
-
 Scaled plots.
 
 ```{r scaled_gif}
@@ -208,7 +207,7 @@ Google trends data on top of case data
 ```{r gtrends}
 
 plot_trends_data <- function(trends_data, states = fav_states, cases = data_fav_states) {
-  # Takes a path to the trends data and what states to plot. Defualts to fav_states if none choosen
+  # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
   scaled_data = scale_data(states, cases)
   
   plot1 <- scaled_data %>%
