@@ -175,6 +175,8 @@ animate_plot <-
 ######################
 ```
 
+## Graphics, Plots, and Gifs
+
 Basic plots lifted from profs code.
 
 ```{r plot}
