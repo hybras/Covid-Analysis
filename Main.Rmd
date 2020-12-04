@@ -191,7 +191,7 @@ Google trends data on top of case data
 
 ```{r gtrends}
 
-path <- "./lockdownTrend.csv"
+path <- "./data/lockdownTrend.csv"
 lockdown_data <- read.csv(path)
 lockdown_dates <- as.Date(lockdown_data$Week, "%Y-%m-%d")
 
