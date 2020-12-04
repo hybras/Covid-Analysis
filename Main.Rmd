@@ -17,7 +17,7 @@ Download data, install packages and load libraries
 
 # disables animation rendering when set to TRUE for faster compilation when testing
 # make sure this stays FALSE when committing!!!!!
-disable_animation_render = FALSE
+disable_animation_render <- FALSE
 
 library(dplyr)
 library(ggplot2)
@@ -42,7 +42,7 @@ time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 
 # legislation data
-social_distancing = read.csv("./data/social_distancing_history_march_to_july_inclusive.csv")
+social_distancing <- read.csv("./data/social_distancing_history_march_to_july_inclusive.csv")
 
 # Get population information about the states
 census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
@@ -50,8 +50,8 @@ census <- read.csv(census_url)
 census$NAME <- tolower(census$NAME)
 
 # trends data
-lockdown_trends_data = read.csv("./data/lockdownTrendData.csv")
-covid_trends_data = read.csv("./data/covidTrendData.csv")
+lockdown_trends_data <- read.csv("./data/lockdownTrendData.csv")
+covid_trends_data <- read.csv("./data/covidTrendData.csv")
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
@@ -64,31 +64,36 @@ num_days <- last_column - 11
 
 # Data is more granular than state, it goes down to town/county. We need to group them together by state.
 by_state <-
-	time_series_US_confirmed %>% select(c(7, 12:all_of(last_column))) %>% group_by(Province_State) %>% summarize_at(vars(2:all_of(num_days)), sum)
+  time_series_US_confirmed %>%
+  select(c(7, 12:all_of(last_column))) %>%
+  group_by(Province_State) %>%
+  summarize_at(vars(2:all_of(num_days)), sum)
 # %>% adorn_totals('row') #idk what this does
 
 # we are using another library for state names. it expects lower cases names
 by_state$Province_State <-
-	tolower(by_state$Province_State)
+  tolower(by_state$Province_State)
 
 # get the contiguous/continental us states, including D.C.
 cont_states <-
-	map_data("state")$region %>% unique()
+  map_data("state")$region %>% unique()
 # limit ourselves to continental US
 by_state <-
-	by_state %>% filter(Province_State %in%  cont_states) %>% dplyr::rename(region = Province_State)
+  by_state %>%
+  filter(Province_State %in% cont_states) %>%
+  dplyr::rename(region = Province_State)
 
 # get the dates in the format given to us: XM.DD.YY (the 'X' is a char literal of unknown purpose)
 # Add 1 because we're starting from 2, to get the columns we need
 # 2020/1/22 is the first date in the set
 col_names <- colnames(by_state)[c(2:all_of(num_days + 1))]
 new_col_names <-
-	seq(as.Date("2020/1/22"), by = "day", length.out = num_days)
+  seq(as.Date("2020/1/22"), by = "day", length.out = num_days)
 by_state <- by_state %>%
-	setNames(new_col_names) %>%
-	dplyr::rename(region = "2020-01-22")
+  setNames(new_col_names) %>%
+  dplyr::rename(region = "2020-01-22")
 
-#Prepare data for plotting, flatten the data
+# Prepare data for plotting, flatten the data
 by_state.long_1 <- pivot_longer(
   by_state,
   cols = c(2:all_of(num_days)),
@@ -103,9 +108,11 @@ by_state.long_1 <- pivot_longer(
 scale_data <-
   function(states, cases) {
     data_scaled <-
-      data.frame(region = vector(),
-                 date = vector(),
-                 cases = vector())
+      data.frame(
+        region = vector(),
+        date = vector(),
+        cases = vector()
+      )
     for (state in states) {
       data_scaled <- cases %>%
         filter(region == state) %>%
@@ -117,47 +124,52 @@ scale_data <-
 
 # Plots cases
 plot_cases <-
-	function(cases,
-			 scaled = FALSE,
-			 start_date = as.Date("2020-1-22"),
-			 end_date = Sys.Date() - 1,
-			 title = "Confirmed Cases vs Time") {
-		plot_1 <- cases %>% ggplot(aes(
-			x = as.Date(date),
-			y = if (scaled)
-				scaled_cases
-			else
-				cases,
-			group = region,
-			color = region
-		)) +
-			labs(title = title,
-				 x = "Date",
-				 y = "Number of Cases") +
-			geom_line() +
-			# Assuming the data goes up to yesterday.
-			scale_x_date(
-				limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
-				date_breaks = "1 month",
-				date_labels = "%B"
-			) +
-			scale_y_continuous(labels = scales::comma) +
-			theme(
-				plot.title = element_text(
-					color = "black",
-					size = 14,
-					face = "bold.italic"
-				),
-				axis.title.x = element_text(color = "black", size = 10),
-				axis.title.y = element_text(color = "black", size = 10),
-			)
-		return(plot_1)
-	}
+  function(cases,
+           scaled = FALSE,
+           start_date = as.Date("2020-1-22"),
+           end_date = Sys.Date() - 1,
+           title = "Confirmed Cases vs Time") {
+    plot_1 <- cases %>% ggplot(aes(
+      x = as.Date(date),
+      y = if (scaled) {
+        scaled_cases
+      } else {
+        cases
+      },
+      group = region,
+      color = region
+    )) +
+      labs(
+        title = title,
+        x = "Date",
+        y = "Number of Cases"
+      ) +
+      geom_line() +
+      # Assuming the data goes up to yesterday.
+      scale_x_date(
+        limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+        date_breaks = "1 month",
+        date_labels = "%B"
+      ) +
+      scale_y_continuous(labels = scales::comma) +
+      theme(
+        plot.title = element_text(
+          color = "black",
+          size = 14,
+          face = "bold.italic"
+        ),
+        axis.title.x = element_text(color = "black", size = 10),
+        axis.title.y = element_text(color = "black", size = 10),
+      )
+    return(plot_1)
+  }
 
 # This function REQUIRES the plot argument to have name "date"
 animate_plot <-
   function(p, w = 750, h = 650, d = 20, ep = 20) {
-    if (disable_animation_render) { return(p) }
+    if (disable_animation_render) {
+      return(p)
+    }
     else {
       animation0 <- animate(
         plot = p + transition_reveal(as.Date(date)),
@@ -181,12 +193,12 @@ Basic plots lifted from profs code.
 
 ```{r plot}
 fav_states <-
-	c("new york", "florida", "texas", "california", "maryland")
+  c("new york", "florida", "texas", "california", "maryland")
 data_fav_states <-
-	by_state.long_1 %>% filter(region %in% fav_states)
+  by_state.long_1 %>% filter(region %in% fav_states)
 
 plot_1 <- data_fav_states %>%
-	plot_cases()
+  plot_cases()
 
 # And now the time series as a fancy gif.
 
@@ -197,7 +209,7 @@ Scaled plots.
 
 ```{r scaled_gif}
 plot_2 <- scale_data(fav_states, data_fav_states) %>%
-	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
+  plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
 animate_plot(plot_2)
 ```
@@ -208,89 +220,91 @@ Function to plot Google trends data on top of case data, and overlay lockdown ty
 
 plot_trends_data <- function(trends_data, states = fav_states, cases = data_fav_states) {
   # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
-  scaled_data = scale_data(states, cases)
-  
+  scaled_data <- scale_data(states, cases)
+
   plot1 <- scaled_data %>%
     plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
-  
-  trends_data = mutate(trends_data, date=Week, Week=NULL)
-  
+
+  trends_data <- mutate(trends_data, date = Week, Week = NULL)
+
   plot <- plot1 + geom_line(
     data = trends_data,
     inherit.aes = FALSE,
-    aes(x = as.Date(date, "%Y-%m-%d"),
-        y = trends_data[, 1] * 25),
+    aes(
+      x = as.Date(date, "%Y-%m-%d"),
+      y = trends_data[, 1] * 25
+    ),
     size = 2
   )
   return(plot)
 }
-
 ```
 
 ```{r stay_at_home}
 plot_legislation_overlay <-
-	function (state,
-			  legislation,
-			  legislationcolor,
-			  scaled = FALSE) {
-		# first letter of state should be capitalized (eg. "Maryland")
-		# legislation is numeric - see following
-		# 1 = stay at home order, 2 = mandatory quarantine for travelers, 3 = non essential business closures
-		# 4 = large gatherings ban, 5 = school closures, 6 = restaurant limits
-		legislation_matrix = c(
-			"stay at home order",
-			"mandatory quarantine for travelers",
-			"non essential business closures",
-			"large gatherings ban",
-			"school closures",
-			"restaurant limits"
-		)
-		state_legis_data <- social_distancing %>% filter(State == state)
-		les_start = state_legis_data[legislation + 1][[1]]
-		les_end = state_legis_data[legislation + 9][[1]]
-		not_enacted = FALSE
-		# check whether date is valid or NA
-		if (les_start == "-") {
-			# legislation was never enacted
-			not_enacted = TRUE
-		} else if (les_end == "-") {
-			# legislation was never lifted
-			les_start = as.Date(les_start, format = "%d-%b")
-			les_end = as.Date("2077-4-02")
-		} else {
-			les_start = as.Date(les_start, format = "%d-%b")
-			les_end = as.Date(les_end, format = "%d-%b")
-		}
-		state = tolower(state)
-		state_data <- by_state.long_1 %>% filter(region == state)
-		
-		if (scaled) {
-		  state_data <- scale_data(c(state), state_data)
-		}
-		
-		plot <- state_data %>%
-			plot_cases(
-				title = paste(paste(
-					paste("COVID case data with", legislation_matrix[legislation], sep = " "),
-					"overlayed -",
-					sep = " "
-				), state, sep = " "),
-				start_date = as.Date("2020-3-01"),
-				end_date = as.Date("2020-7-31"),
-				scaled = scaled
-			)
-		
-		if (not_enacted)
-			plot
-		else
-			plot + annotate(
-				"rect",
-				xmin = les_start,
-				xmax = les_end,
-				ymin = 0,
-				ymax = Inf,
-				alpha = 0.2,
-				fill = legislationcolor
-			)
-	}
+  function(state,
+           legislation,
+           legislationcolor,
+           scaled = FALSE) {
+    # first letter of state should be capitalized (eg. "Maryland")
+    # legislation is numeric - see following
+    # 1 = stay at home order, 2 = mandatory quarantine for travelers, 3 = non essential business closures
+    # 4 = large gatherings ban, 5 = school closures, 6 = restaurant limits
+    legislation_matrix <- c(
+      "stay at home order",
+      "mandatory quarantine for travelers",
+      "non essential business closures",
+      "large gatherings ban",
+      "school closures",
+      "restaurant limits"
+    )
+    state_legis_data <- social_distancing %>% filter(State == state)
+    les_start <- state_legis_data[legislation + 1][[1]]
+    les_end <- state_legis_data[legislation + 9][[1]]
+    not_enacted <- FALSE
+    # check whether date is valid or NA
+    if (les_start == "-") {
+      # legislation was never enacted
+      not_enacted <- TRUE
+    } else if (les_end == "-") {
+      # legislation was never lifted
+      les_start <- as.Date(les_start, format = "%d-%b")
+      les_end <- as.Date("2077-4-02")
+    } else {
+      les_start <- as.Date(les_start, format = "%d-%b")
+      les_end <- as.Date(les_end, format = "%d-%b")
+    }
+    state <- tolower(state)
+    state_data <- by_state.long_1 %>% filter(region == state)
+
+    if (scaled) {
+      state_data <- scale_data(c(state), state_data)
+    }
+
+    plot <- state_data %>%
+      plot_cases(
+        title = paste(paste(
+          paste("COVID case data with", legislation_matrix[legislation], sep = " "),
+          "overlayed -",
+          sep = " "
+        ), state, sep = " "),
+        start_date = as.Date("2020-3-01"),
+        end_date = as.Date("2020-7-31"),
+        scaled = scaled
+      )
+
+    if (not_enacted) {
+      plot
+    } else {
+      plot + annotate(
+        "rect",
+        xmin = les_start,
+        xmax = les_end,
+        ymin = 0,
+        ymax = Inf,
+        alpha = 0.2,
+        fill = legislationcolor
+      )
+    }
+  }
 ```
