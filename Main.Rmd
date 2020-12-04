@@ -13,7 +13,7 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 
 Download data, install packages and load libraries
 
-```{r libs}
+```{r libs, include = FALSE}
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -36,7 +36,7 @@ time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confi
 time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 
-social_distancing = read.csv("./legislation-data/social_distancing_history_march_to_july_inclusive.csv")
+social_distancing = read.csv("./data/social_distancing_history_march_to_july_inclusive.csv")
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
@@ -191,7 +191,7 @@ Google trends data on top of case data
 
 ```{r gtrends}
 
-path <- ".\\lockdownTrend.csv"
+path <- "./data/lockdownTrend.csv"
 lockdown_data <- read.csv(path)
 lockdown_dates <- as.Date(lockdown_data$Week, "%Y-%m-%d")
 
