@@ -125,13 +125,13 @@ plot_cases <-
 		return(plot_1)
 	}
 
-# This function needs the plot argument to be passed in in the form (plot = p + transition_reveal(argument_to_animate))
+# This function REQUIRES the plot argument to have name "date"
 animate_plot <-
   function(p, w = 750, h = 650, d = 20, ep = 20) {
     if (disable_animation_render) { return(p) }
     else {
       animation0 <- animate(
-        plot = p,
+        plot = p + transition_reveal(as.Date(date)),
         width = w,
         height = h,
         duration = d,
@@ -159,7 +159,7 @@ plot_1 <- data_fav_states %>%
 
 # And now the time series as a fancy gif.
 
-animate_plot(plot_1 + transition_reveal(as.Date(date)))
+animate_plot(plot_1)
 ```
 
 The same thing again, but scaled to cases per 100000 people
@@ -191,7 +191,7 @@ Scaled plots.
 plot_2 <- data_scaled %>%
 	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
-animate_plot(plot_2 + transition_reveal(as.Date(date)))
+animate_plot(plot_2)
 ```
 
 Google trends data on top of case data
@@ -214,7 +214,7 @@ plot_3 <- ggplot() +
 		color = region
 	))
 
-animate_plot(plot_3 + transition_reveal(as.Date(date)))
+animate_plot(plot_3)
 ```
 
 ```{r stay_at_home}
