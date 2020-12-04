@@ -14,6 +14,11 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 Download data, install packages and load libraries
 
 ```{r libs, include = FALSE}
+
+# disables animation rendering when set to TRUE for faster compilation when testing
+# make sure this stays FALSE when committing!!!!!
+disable_animation_render = FALSE
+
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -36,7 +41,13 @@ time_series_US_confirmed <- "csse_covid_19_time_series/time_series_covid19_confi
 time_series_US_confirmed <- paste(base_url, time_series_US_confirmed, sep = "")
 time_series_US_confirmed <- read.csv(time_series_US_confirmed)
 
+# legislation data
 social_distancing = read.csv("./data/social_distancing_history_march_to_july_inclusive.csv")
+
+# Get population information about the states
+census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
+census <- read.csv(census_url)
+census$NAME <- tolower(census$NAME)
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
@@ -81,7 +92,26 @@ by_state.long_1 <- pivot_longer(
   values_to = "cases"
 )
 
-# Helper function to generate plots. Can be animated.
+#####################################################
+# Helper functions to generate plots.
+
+# Scales data
+scale_data <-
+  function(states, cases) {
+    data_scaled <-
+      data.frame(region = vector(),
+                 date = vector(),
+                 cases = vector())
+    for (state in states) {
+      data_scaled <- cases %>%
+        filter(region == state) %>%
+        mutate(scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000) %>%
+        merge(data_scaled, all = TRUE)
+    }
+    return(data_scaled)
+  }
+
+# Plots cases
 plot_cases <-
 	function(cases,
 			 scaled = FALSE,
@@ -97,7 +127,7 @@ plot_cases <-
 			group = region,
 			color = region
 		)) +
-			labs(title,
+			labs(title = title,
 				 x = "Date",
 				 y = "Number of Cases") +
 			geom_line() +
@@ -119,6 +149,26 @@ plot_cases <-
 			)
 		return(plot_1)
 	}
+
+# This function REQUIRES the plot argument to have name "date"
+animate_plot <-
+  function(p, w = 750, h = 650, d = 20, ep = 20) {
+    if (disable_animation_render) { return(p) }
+    else {
+      animation0 <- animate(
+        plot = p + transition_reveal(as.Date(date)),
+        width = w,
+        height = h,
+        duration = d,
+        end_pause = ep,
+        renderer = gifski_renderer()
+      )
+      return(animation0)
+    }
+  }
+
+# End helper functions
+######################
 ```
 
 Basic plots lifted from profs code.
@@ -134,59 +184,35 @@ plot_1 <- data_fav_states %>%
 
 # And now the time series as a fancy gif.
 
-# animation_1 <- plot_1 + transition_reveal(as.Date(date))
-# animation_1 <- animate(
-#   animation_1,
-#   width = 750,
-#   height = 650,
-#   duration = 20,
-#   end_pause = 20,
-#   renderer = gifski_renderer()
-# )
-# animation_1
+animate_plot(plot_1)
 ```
 
-The same thing again, but scaled to cases per 100000 people
-
-```{r normalized}
-# Get population information about the states
-census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
-census <- read.csv(census_url)
-census$NAME <- tolower(census$NAME)
-
-# Create a new dataframe to store the scaled data
-data_scaled <-
-	data.frame(region = vector(),
-			   date = vector(),
-			   cases = vector())
-
-# For each state, find that states population, divide all of the case counts by the population and merge the scaled data back into the dataframe
-for (state in cont_states) {
-  data_scaled <- by_state.long_1 %>%
-    filter(region == state) %>%
-    mutate(scaled_cases = (cases / filter(census, NAME == state)$POPESTIMATE2019) * 100000) %>%
-    merge(data_scaled, all = TRUE)
-}
-
-fav_states_scaled <- data_scaled %>% filter(region == fav_states)
-```
 
 Scaled plots.
 
 ```{r scaled_gif}
-plot_2 <- fav_states_scaled %>%
+plot_2 <- scale_data(fav_states, data_fav_states) %>%
 	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
-# animation_2 <- plot_2 + transition_reveal(as.Date(date))
-# animation_2 <- animate(
-#   animation_2,
-#   width = 750,
-#   height = 650,
-#   duration = 20,
-#   end_pause = 20,
-#   renderer = gifski_renderer()
-# )
-# animation_2
+animate_plot(plot_2)
+```
+
+Google trends data on top of case data
+
+```{r scaled_gif}
+plot_2 <- data_scaled %>%
+	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
+
+animation_2 <- plot_2 + transition_reveal(as.Date(date))
+animation_2 <- animate(
+  animation_2,
+  width = 750,
+  height = 650,
+  duration = 20,
+  end_pause = 20,
+  renderer = gifski_renderer()
+)
+animation_2
 ```
 
 Google trends data on top of case data
@@ -217,7 +243,8 @@ plot_trends_data <- function(path, states = fav_states) {
 plot_legislation_overlay <-
 	function (state,
 			  legislation,
-			  legislationcolor) {
+			  legislationcolor,
+			  scaled = FALSE) {
 		# first letter of state should be capitalized (eg. "Maryland")
 		# legislation is numeric - see following
 		# 1 = stay at home order, 2 = mandatory quarantine for travelers, 3 = non essential business closures
@@ -249,6 +276,10 @@ plot_legislation_overlay <-
 		state = tolower(state)
 		state_data <- by_state.long_1 %>% filter(region == state)
 		
+		if (scaled) {
+		  state_data <- scale_data(c(state), state_data)
+		}
+		
 		plot <- state_data %>%
 			plot_cases(
 				title = paste(paste(
@@ -257,7 +288,8 @@ plot_legislation_overlay <-
 					sep = " "
 				), state, sep = " "),
 				start_date = as.Date("2020-3-01"),
-				end_date = as.Date("2020-7-31")
+				end_date = as.Date("2020-7-31"),
+				scaled = scaled
 			)
 		
 		if (not_enacted)
