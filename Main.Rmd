@@ -193,24 +193,23 @@ Google trends data on top of case data
 
 ```{r gtrends}
 
-plot_trends_data <- function(states, path) {
+plot_trends_data <- function(path, states = fav_states) {
+  # Takes a path to the trends data and what states to plot. Defualts to fav_states if none choosen
   
   plot <- fav_states_scaled %>%
     plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
   
   trends_data <- read.csv(path)
   
-  plot <- plot + geom_line(data = trends_data,
-                   inherit.aes = FALSE,
-                   aes(x = as.Date(trends_data[, 1], "%Y-%m-%d"),
-                       y = trends_data[, 2] * 25),
-                   size = 2)
+  plot <- plot + geom_line(
+    data = trends_data,
+    inherit.aes = FALSE,
+    aes(x = as.Date(trends_data[, 1], "%Y-%m-%d"),
+        y = trends_data[, 2] * 25),
+    size = 2
+  )
   return(plot)
 }
-
-path_1 <- "https://raw.githubusercontent.com/hybras/Covid-Analysis/legislation-overlay-scaled/data/covidTrendData.csv?token=AKOM6X7MITS3J2OPSUSE43272LGUO"
-x <- plot_trends_data(fav_states, path_1)
-x
 
 ```
 
