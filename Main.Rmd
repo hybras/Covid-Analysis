@@ -48,6 +48,10 @@ social_distancing = read.csv("./data/social_distancing_history_march_to_july_inc
 census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
 census <- read.csv(census_url)
 census$NAME <- tolower(census$NAME)
+
+# trends data
+lockdown_trends_data = read.csv("./data/lockdownTrendData.csv")
+covid_trends_data = read.csv("./data/covidTrendData.csv")
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
@@ -199,39 +203,22 @@ animate_plot(plot_2)
 
 Google trends data on top of case data
 
-```{r scaled_gif}
-plot_2 <- data_scaled %>%
-	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
-
-animation_2 <- plot_2 + transition_reveal(as.Date(date))
-animation_2 <- animate(
-  animation_2,
-  width = 750,
-  height = 650,
-  duration = 20,
-  end_pause = 20,
-  renderer = gifski_renderer()
-)
-animation_2
-```
-
-Google trends data on top of case data
-
 ```{r gtrends}
 
-plot_trends_data <- function(path, states = fav_states) {
+plot_trends_data <- function(trends_data, states = fav_states, cases = data_fav_states) {
   # Takes a path to the trends data and what states to plot. Defualts to fav_states if none choosen
+  scaled_data = scale_data(states, cases)
   
-  plot <- fav_states_scaled %>%
+  plot1 <- scaled_data %>%
     plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
   
-  trends_data <- read.csv(path)
+  trends_data = mutate(trends_data, date=Week, Week=NULL)
   
-  plot <- plot + geom_line(
+  plot <- plot1 + geom_line(
     data = trends_data,
     inherit.aes = FALSE,
-    aes(x = as.Date(trends_data[, 1], "%Y-%m-%d"),
-        y = trends_data[, 2] * 25),
+    aes(x = as.Date(date, "%Y-%m-%d"),
+        y = trends_data[, 1] * 25),
     size = 2
   )
   return(plot)
