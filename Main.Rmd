@@ -14,6 +14,11 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 Download data, install packages and load libraries
 
 ```{r libs, include = FALSE}
+
+# disables animation rendering when set to TRUE for faster compilation when testing
+# make sure this stays FALSE when committing!!!!!
+disable_animation_render = FALSE
+
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
@@ -81,7 +86,8 @@ by_state.long_1 <- pivot_longer(
   values_to = "cases"
 )
 
-# Helper function to generate plots. Can be animated.
+#####################################################
+# Helper functions to generate plots. Can be animated.
 plot_cases <-
 	function(cases,
 			 scaled = FALSE,
@@ -119,6 +125,26 @@ plot_cases <-
 			)
 		return(plot_1)
 	}
+
+# This function needs the plot argument to be passed in in the form (plot = p + transition_reveal(argument_to_animate))
+animate_plot <-
+  function(p, w = 750, h = 650, d = 20, ep = 20) {
+    if (disable_animation_render) { return(p) }
+    else {
+      animation0 <- animate(
+        plot = p,
+        width = w,
+        height = h,
+        duration = d,
+        end_pause = ep,
+        renderer = gifski_renderer()
+      )
+      return(animation0)
+    }
+  }
+
+# End helper functions
+######################
 ```
 
 Basic plots lifted from profs code.
@@ -134,16 +160,7 @@ plot_1 <- data_fav_states %>%
 
 # And now the time series as a fancy gif.
 
-animation_1 <- plot_1 + transition_reveal(as.Date(date))
-animation_1 <- animate(
-  animation_1,
-  width = 750,
-  height = 650,
-  duration = 20,
-  end_pause = 20,
-  renderer = gifski_renderer()
-)
-animation_1
+animate_plot(plot_1 + transition_reveal(as.Date(date)))
 ```
 
 The same thing again, but scaled to cases per 100000 people
@@ -175,25 +192,17 @@ Scaled plots.
 plot_2 <- data_scaled %>%
 	plot_cases(scaled = T, title = "Confirmed Cases per 100,000 People vs Time")
 
-animation_2 <- plot_2 + transition_reveal(as.Date(date))
-animation_2 <- animate(
-  animation_2,
-  width = 750,
-  height = 650,
-  duration = 20,
-  end_pause = 20,
-  renderer = gifski_renderer()
-)
-animation_2
+animate_plot(plot_2 + transition_reveal(as.Date(date)))
 ```
 
 Google trends data on top of case data
 
 ```{r gtrends}
 
-path <- "./data/lockdownTrend.csv"
+
+path <- "./data/lockdownTrendData.csv"
 lockdown_data <- read.csv(path)
-lockdown_dates <- as.Date(lockdown_data$Week, "%Y-%m-%d")
+date <- as.Date(lockdown_data$Week, "%Y-%m-%d") # variable name has to be "date" to match animation
 
 plot_3 <- ggplot() +
   labs(title = "Confirmed Cases per 100,000 People vs Time and Lockdown Trend",
@@ -207,7 +216,7 @@ plot_3 <- ggplot() +
 		color = region
 	))
 
-plot_3
+animate_plot(plot_3 + transition_reveal(as.Date(date)))
 ```
 
 ```{r stay_at_home}
