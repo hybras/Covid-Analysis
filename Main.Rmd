@@ -52,6 +52,8 @@ census$NAME <- tolower(census$NAME)
 # trends data
 lockdown_trends_data = read.csv("./data/lockdownTrendData.csv")
 covid_trends_data = read.csv("./data/covidTrendData.csv")
+covid19_trends_data = read.csv("./data/covid19TrendData.csv")
+coronavirus_trends_data = read.csv("./data/coronavirusTrendData.csv")
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
