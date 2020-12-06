@@ -17,7 +17,7 @@ Download data, install packages and load libraries
 
 # disables animation rendering when set to TRUE for faster compilation when testing
 # make sure this stays FALSE when committing!!!!!
-disable_animation_render = FALSE
+disable_animation_render = TRUE
 
 library(dplyr)
 library(ggplot2)
@@ -49,11 +49,8 @@ census_url <- "https://www2.census.gov/programs-surveys/popest/datasets/2010-201
 census <- read.csv(census_url)
 census$NAME <- tolower(census$NAME)
 
-# trends data
-lockdown_trends_data = read.csv("./data/lockdownTrendData.csv")
-covid_trends_data = read.csv("./data/covidTrendData.csv")
-covid19_trends_data = read.csv("./data/covid19TrendData.csv")
-coronavirus_trends_data = read.csv("./data/coronavirusTrendData.csv")
+# pop density data
+pop_density_data = read.csv("./data/us_pop_den_by_state_2010.csv")
 ```
 
 Get the data we *want*. Columns $\left[1,11\right]$ are locale identifiers. Columns $\left[12,\infty\right)$ are dates. The data is more granular than state, it goes down to town/county. We need to fix that.
@@ -314,4 +311,27 @@ get_slope <-
     slope = regres[[1]][[2]]
     return(c(slope, intercept))
   }
+```
+
+```{r pop density vs speed of spread for first month}
+state_names = c()
+popdens = c()
+sp_of_sprd = c()
+for (state_name in pop_density_data$State) {
+  # skip these two states because no one lives there anyways and they are giving errors
+  # if you're from these two states, i'm sorry no offense
+  if (state_name == "Hawaii" || state_name == "Alaska") { next } 
+  # remove outliers of spread speed (yields better result when outlier not removed)
+  # if (state_name == "New York" || state_name == "New Jersey"|| state_name == "Massachusetts"|| state_name == "Rhodes Island"|| state_name == "Connecticut") { next } 
+  density = as.numeric((pop_density_data %>% filter(State == state_name))$People.per.Square.Mile)
+  speed = get_slope(tolower(state_name), "2020-04-01", "2020-05-01")
+  state_names = append(state_names, state_name)
+  popdens = append(popdens, density)
+  sp_of_sprd = append(sp_of_sprd, speed[1])
+}
+density_vs_spread = data.frame(state_names, popdens, sp_of_sprd)
+regres = lm(density_vs_spread$sp_of_sprd ~ density_vs_spread$popdens)
+plot(density_vs_spread$popdens, density_vs_spread$sp_of_sprd)
+abline(a = regres[1] , regres[2], col = "red")
+summary(regres)$r.squared
 ```
