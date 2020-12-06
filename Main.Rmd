@@ -295,3 +295,18 @@ plot_legislation_overlay <-
 			)
 	}
 ```
+
+
+```{r linear_regression}
+# This function returns slope and intercept of linear regression between X = days passed from "from" argument, Y = scaled covid cases
+get_slope <-
+  function(state, from, until) {
+    from = as.Date(from)
+    until = as.Date(until)
+    state_data <- by_state.long_1 %>% filter(region == state)
+    state_data <- scale_data(c(state), state_data)
+    state_data <- state_data %>% filter(as.Date(date) > from)
+    state_data <- state_data %>% filter(as.Date(date) < until)
+    lm(as.integer(as.Date(date) - from) ~ scaled_cases, data = state_data)
+  }
+```
