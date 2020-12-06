@@ -141,7 +141,7 @@ plot_cases <-
 			scale_x_date(
 				limits = c(as.Date("2020-1-22"), as.Date(end_date)),
 				date_breaks = "1 month",
-				date_labels = "%B"
+				date_labels = "%b"
 			) +
 			scale_y_continuous(labels = scales::comma) +
 			theme(
@@ -311,6 +311,9 @@ get_slope <-
     state_data <- scale_data(c(state), state_data)
     state_data <- state_data %>% filter(as.Date(date) > from)
     state_data <- state_data %>% filter(as.Date(date) < until)
-    lm(as.integer(as.Date(date) - from) ~ scaled_cases, data = state_data)
+    regres = lm(state_data$scaled_cases ~ as.integer(as.Date(state_data$date) - from))
+    intercept = regres[[1]][1]
+    slope = regres[[1]][2]
+    return(c(slope, intercept))
   }
 ```
