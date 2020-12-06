@@ -139,7 +139,7 @@ plot_cases <-
 			geom_line() +
 			# Assuming the data goes up to yesterday.
 			scale_x_date(
-				limits = c(as.Date("2020-1-22"), Sys.Date() - 1),
+				limits = c(as.Date("2020-1-22"), as.Date(end_date)),
 				date_breaks = "1 month",
 				date_labels = "%B"
 			) +
@@ -257,7 +257,7 @@ plot_legislation_overlay <-
 		} else if (les_end == "-") {
 			# legislation was never lifted
 			les_start = as.Date(les_start, format = "%d-%b")
-			les_end = as.Date("2077-4-02")
+			les_end = as.Date("2020-07-31")
 		} else {
 			les_start = as.Date(les_start, format = "%d-%b")
 			les_end = as.Date(les_end, format = "%d-%b")
