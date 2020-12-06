@@ -312,8 +312,8 @@ get_slope <-
     state_data <- state_data %>% filter(as.Date(date) > from)
     state_data <- state_data %>% filter(as.Date(date) < until)
     regres = lm(state_data$scaled_cases ~ as.integer(as.Date(state_data$date) - from))
-    intercept = regres[[1]][1]
-    slope = regres[[1]][2]
+    intercept = regres[[1]][[1]]
+    slope = regres[[1]][[2]]
     return(c(slope, intercept))
   }
 ```
