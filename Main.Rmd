@@ -207,13 +207,13 @@ Google trends data on top of case data
 
 ```{r gtrends}
 
-plot_trends_data <- function(state, cases = data_fav_states, term) {
+plot_trends_data <- function(states = fav_states, cases = data_fav_states, term) {
   state <- tolower(state)
   trends_data <-
     read.csv(paste(sep = '/', '.', 'data', term, paste(sep='', state, ".csv")))
   
   # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
-  scaled_data <- scale_data(state, cases) %>% filter(region == state)
+  scaled_data <- scale_data(state, cases) %>% filter(region %in% state)
   
   plot1 <- scaled_data %>%
     plot_cases(scaled = T, title = paste("Scaled Cases compared to Term:", term))
