@@ -193,7 +193,6 @@ plot_1 <- data_fav_states %>%
 animate_plot(plot_1)
 ```
 
-
 Scaled plots.
 
 ```{r scaled_gif}
@@ -299,7 +298,6 @@ plot_legislation_overlay <-
 			)
 	}
 ```
-
 
 ```{r linear_regression}
 # This function returns slope and intercept of linear regression between X = days passed from "from" argument, Y = scaled covid cases
