@@ -51,9 +51,9 @@ census$NAME <- tolower(census$NAME)
 
 # trends data
 lockdown_trends_data = read.csv("./data/lockdown/us.csv")
-covid_trends_data = read.csv("./data/covidTrendData.csv")
-covid19_trends_data = read.csv("./data/covid19TrendData.csv")
-coronavirus_trends_data = read.csv("./data/coronavirusTrendData.csv")
+covid_trends_data = read.csv("./data/covid/us.csv")
+covid19_trends_data = read.csv("./data/covid19/us.csv")
+coronavirus_trends_data = read.csv("./data/coronavirus/us.csv")
 # pop density data
 pop_density_data = read.csv("./data/us_pop_den_by_state_2010.csv")
 ```
@@ -231,6 +231,7 @@ plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) 
   return(plot)
 }
 
+plot_trends_data("california", term="covid")
 ```
 
 ```{r stay_at_home}
@@ -316,7 +317,6 @@ get_slope <-
     slope = regres[[1]][[2]]
     return(c(slope, intercept))
   }
-get_slope("california", "2020-04-01", "2020-06-01")
 ```
 
 ```{r pop density vs speed of spread for first month}
