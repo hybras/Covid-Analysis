@@ -50,7 +50,7 @@ census <- read.csv(census_url)
 census$NAME <- tolower(census$NAME)
 
 # trends data
-lockdown_trends_data = read.csv("./data/lockdownTrendData.csv")
+lockdown_trends_data = read.csv("./data/lockdown/us.csv")
 covid_trends_data = read.csv("./data/covidTrendData.csv")
 covid19_trends_data = read.csv("./data/covid19TrendData.csv")
 coronavirus_trends_data = read.csv("./data/coronavirusTrendData.csv")
@@ -206,7 +206,7 @@ Google trends data on top of case data
 
 ```{r gtrends}
 
-plot_trends_data <- function(states = fav_states, cases = data_fav_states, term) {
+plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) {
   state <- tolower(state)
   trends_data <-
     read.csv(paste(sep = '/', '.', 'data', term, paste(sep='', state, ".csv")))
