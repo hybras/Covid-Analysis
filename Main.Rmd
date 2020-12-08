@@ -305,17 +305,18 @@ plot_legislation_overlay <-
 # This function returns slope and intercept of linear regression between X = days passed from "from" argument, Y = scaled covid cases
 get_slope <-
   function(state, from, until) {
-    from = as.Date(from)
-    until = as.Date(until)
+    from <- as.Date(from)
+    until <- as.Date(until)
     state_data <- by_state.long_1 %>% filter(region == state)
     state_data <- scale_data(c(state), state_data)
-    state_data <- state_data %>% filter(as.Date(date) > from)
-    state_data <- state_data %>% filter(as.Date(date) < until)
-    regres = lm(state_data$scaled_cases ~ as.integer(as.Date(state_data$date) - from))
+    state_data <- state_data %>% filter(as.Date(date) > as.Date(from))
+    state_data <- state_data %>% filter(as.Date(date) < as.Date(until))
+    regres = lm(state_data$scaled_cases ~ as.integer(as.Date(state_data$date) - as.Date(from)))
     intercept = regres[[1]][[1]]
     slope = regres[[1]][[2]]
     return(c(slope, intercept))
   }
+get_slope("california", "2020-04-01", "2020-06-01")
 ```
 
 ```{r pop density vs speed of spread for first month}
