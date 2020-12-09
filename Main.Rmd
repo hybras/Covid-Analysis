@@ -335,7 +335,9 @@ Avg. slope of states in this table without “stay at home order”:
 - 29.259
 
 Conclusion: Analyzing the above table, the stay at home order has shown to be effective for states with high population density.
+
 Possible Problem: only 1 state (massachusetts) in this group did not impose stay at home order
+
 Note: No outliers exist in the slope set
 
 ```{r table2}
@@ -358,7 +360,9 @@ Avg. slope of states in this table without “stay at home order”
 - 5.731
 
 Conclusion: stay at home order somewhat effective for states with low pop. density
+
 Note: no outliers exist in this slope set
+
 Possible improvements: Add statistical tests with p-values to support this claim
 
 ## Question 2: Does population density and the speed of spread (slope for the first month) correlate?
