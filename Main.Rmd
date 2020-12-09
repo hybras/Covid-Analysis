@@ -313,7 +313,7 @@ get_slope <-
   }
 ```
 
-Analysis:
+### Analysis
 
 ```{r table1}
 states <- c("New Jersey", "Rhode Island", "Massachusetts", "Connecticut", "Maryland", "Delaware", "New York")
