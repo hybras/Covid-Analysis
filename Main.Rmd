@@ -227,56 +227,6 @@ plot_2 <- scale_data(fav_states, data_fav_states) %>%
 animate_plot(plot_2)
 ```
 
-```{r gtrends}
-
-plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) {
-  state <- tolower(state)
-  trends_data <-
-    read.csv(paste(sep = "/", ".", "data", term, paste(sep = "", state, ".csv")))
-
-  # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
-  scaled_data <-
-    scale_data(state, cases) %>% filter(region %in% state)
-
-  trends_data <- mutate(trends_data, date = Week, Week = NULL)
-
-  scale_factor <-
-    max(scaled_data$scaled_cases) / max(trends_data[1])
-
-  plot <- scaled_data %>%
-    plot_cases(
-      scaled = T,
-      title = paste("Scaled Cases compared to Term:", term)
-    ) +
-    geom_line(
-      data = trends_data,
-      inherit.aes = FALSE,
-      aes(
-        x = as.Date(date, "%Y-%m-%d"),
-        y = trends_data[, 1] * scale_factor
-      ),
-      size = 2
-    ) +
-    scale_y_continuous(sec.axis = sec_axis(~ . / (max(
-      scaled_data$scaled_cases
-    ) / 100), name = paste(sep = "", "% of peak interest in \"", term, "\"")))
-
-  return(plot)
-}
-
-plot_trends_data("california", term = "covid")
-plot_trends_data("maryland", term = "covid")
-plot_trends_data("new york", term = "covid")
-plot_trends_data("texas", term = "covid")
-plot_trends_data("florida", term = "covid")
-
-plot_trends_data("california", term = "lockdown")
-plot_trends_data("maryland", term = "lockdown")
-plot_trends_data("new york", term = "lockdown")
-plot_trends_data("texas", term = "lockdown")
-plot_trends_data("florida", term = "lockdown")
-```
-
 ```{r stay_at_home}
 plot_legislation_overlay <-
   function(state,
@@ -413,12 +363,6 @@ Possible improvements: Add statistical tests with p-values to support this claim
 
 ## Question 2: Does population density and the speed of spread (slope for the first month) correlate?
 
-This R code gets spread speed (slope) for the first month of covid (april) for each state and plots it against the population density.
-
-Analysis: Result is somewhat linear, with the r-sq value of 0.553. It can be said that there is a weak linear relationship between population density of the state and the speed of covid spread for the first month (April).
-
-Possible improvements: Use the population density data that is more detailed? Right now the code is using state-level but we can maybe use city-level.
-
 ```{r pop density vs speed of spread for first month}
 state_names <- c()
 popdens <- c()
@@ -444,7 +388,63 @@ abline(a = regres[1], regres[2], col = "red")
 summary(regres)$r.squared
 ```
 
+This R code gets spread speed (slope) for the first month of covid (april) for each state and plots it against the population density.
+
+Analysis: Result is somewhat linear, with the r-sq value of 0.553. It can be said that there is a weak linear relationship between population density of the state and the speed of covid spread for the first month (April).
+
+Possible improvements: Use the population density data that is more detailed? Right now the code is using state-level but we can maybe use city-level.
+
 ## Question 3: How does Google Trends search term and covid case data correlate?
+
+```{r gtrends}
+
+plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) {
+  state <- tolower(state)
+  trends_data <-
+    read.csv(paste(sep = "/", ".", "data", term, paste(sep = "", state, ".csv")))
+
+  # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
+  scaled_data <-
+    scale_data(state, cases) %>% filter(region %in% state)
+
+  trends_data <- mutate(trends_data, date = Week, Week = NULL)
+
+  scale_factor <-
+    max(scaled_data$scaled_cases) / max(trends_data[1])
+
+  plot <- scaled_data %>%
+    plot_cases(
+      scaled = T,
+      title = paste("Scaled Cases compared to Term:", term)
+    ) +
+    geom_line(
+      data = trends_data,
+      inherit.aes = FALSE,
+      aes(
+        x = as.Date(date, "%Y-%m-%d"),
+        y = trends_data[, 1] * scale_factor
+      ),
+      size = 2
+    ) +
+    scale_y_continuous(sec.axis = sec_axis(~ . / (max(
+      scaled_data$scaled_cases
+    ) / 100), name = paste(sep = "", "% of peak interest in \"", term, "\"")))
+
+  return(plot)
+}
+
+# plot_trends_data("california", term = "covid")
+plot_trends_data("maryland", term = "covid")
+# plot_trends_data("new york", term = "covid")
+# plot_trends_data("texas", term = "covid")
+# plot_trends_data("florida", term = "covid")
+# 
+# plot_trends_data("california", term = "lockdown")
+# plot_trends_data("maryland", term = "lockdown")
+# plot_trends_data("new york", term = "lockdown")
+# plot_trends_data("texas", term = "lockdown")
+plot_trends_data("florida", term = "lockdown")
+```
 
 ### Analysis Term "covid-19"
 
