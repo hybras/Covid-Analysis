@@ -1,6 +1,14 @@
 ---
-title: "Main"
-author: "Team 12"
+title: "Team 12 Covid Data Analysis"
+author:
+  - "Varun Chari (117291506)"
+  - "David Kim (116643764)"
+  - "Htet Kaung Myat Kyaw (117587593)"
+  - "Kaitlyn Laohoo (115854758)"
+  - "Ethan Huegler (117051193)"
+  - "Anthony Costanza (115761773)"
+  - "Eisha Ahmed (116630191)"
+  - "Kyle Weston (117541120)"
 date: "11/12/2020"
 output: 
   html_document:
@@ -17,7 +25,7 @@ Download data, install packages and load libraries
 
 # disables animation rendering when set to TRUE for faster compilation when testing
 # make sure this stays FALSE when committing!!!!!
-disable_animation_render = TRUE
+disable_animation_render = FALSE
 
 library(dplyr)
 library(ggplot2)
@@ -179,8 +187,6 @@ animate_plot <-
 # End helper functions
 ######################
 ```
-#Hypothesis: 
-#Question 1: Is “stay at home order” actually effective?
 
 Basic plots lifted from profs code.
 
@@ -235,12 +241,22 @@ plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) 
     ) +
     scale_y_continuous(sec.axis = sec_axis( ~ . / (max(
       scaled_data$scaled_cases
-    ) / 100), name = paste(sep="", "% of peek interest in \"", term, "\"")))
+    ) / 100), name = paste(sep="", "% of peak interest in \"", term, "\"")))
   
   return(plot)
 }
 
 plot_trends_data("california", term="covid")
+plot_trends_data("maryland", term="covid")
+plot_trends_data("new york", term="covid")
+plot_trends_data("texas", term="covid")
+plot_trends_data("florida", term="covid")
+
+plot_trends_data("california", term="lockdown")
+plot_trends_data("maryland", term="lockdown")
+plot_trends_data("new york", term="lockdown")
+plot_trends_data("texas", term="lockdown")
+plot_trends_data("florida", term="lockdown")
 ```
 
 ```{r stay_at_home}
@@ -406,6 +422,6 @@ The first peak in March and April coincides with the initial national concern wi
 Conclusion: The spike in the search term “covid-19” appears to correlate with covid-19 case concerns and milestones. 
 
 Analysis Term "lockdown": 
-The individual state peaks align with the day that either the state’s governor announced a lockdown or the day the state’s lockdown went into effect. The one exception is Texas, where the governor asked those to stay at home but did not consider it an order, but 4 of the 5 most populated counties in Texas did implement their own orders around Texas’ peak. Overall, it seems that the spikes in the search term “lockdown” appear to correlate with the stay-at-home orders.
+The individual state peaks align with the day that either the state’s governor announced a lockdown or the day the state’s lockdown went into effect. The one exception is Texas, where the governor asked those to stay at home but did not consider it an order, but 4 of the 5 most populated counties in Texas did implement their own orders around Texas’ peak.
 
 Conclusion: The spikes in the search term “lockdown” appear to correlate with dates that stay-at-home orders were put into place or had recently gone into effect.
