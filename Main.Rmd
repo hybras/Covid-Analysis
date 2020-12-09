@@ -29,6 +29,7 @@ library(png)
 library(ggrepel)
 library(scales)
 library(maps)
+library(knitr)
 ```
 
 Download and read data.
@@ -178,6 +179,8 @@ animate_plot <-
 # End helper functions
 ######################
 ```
+#Hypothesis: 
+#Question 1: Is “stay at home order” actually effective?
 
 Basic plots lifted from profs code.
 
@@ -203,8 +206,6 @@ plot_2 <- scale_data(fav_states, data_fav_states) %>%
 
 animate_plot(plot_2)
 ```
-
-Google trends data on top of case data
 
 ```{r gtrends}
 
@@ -319,6 +320,52 @@ get_slope <-
   }
 ```
 
+
+Analysis: 
+```{r table1}
+states = c("New Jersey", "Rhode Island", "Massachusetts", "Connecticut", "Maryland", "Delaware", "New York")
+saa_order = c("Yes", "Yes", "No", "Yes", "Yes", "Yes", "Yes")
+slopes <- c()
+for (state_lower in tolower(states)) {
+  slopes <- append(slopes, get_slope(state = state_lower, from = "2020-04-01", until = "2020-05-01")[1])
+}
+df = data.frame(states, saa_order, slopes)
+kable(df, col.names=c("State", "Stay at Home Enacted?", "Avg. April new positives per day"))
+```
+Avg. slope of states in this table with “stay at home order”:
+  26.435
+Avg. slope of states in this table without “stay at home order”:
+	29.259
+Conclusion: Analyzing the above table, the stay at home order has shown to be effective for states with high population density. 
+Possible Problem: only 1 state (massachusetts) in this group did not impose stay at home order
+Note: No outliers exist in the slope set
+
+```{r table2}
+states = c("Florida", "California", "Kentucky", "Texas", "Iowa", "Nebraska")
+saa_order = c("Yes", "Yes", "No", "Yes", "No", "No")
+slopes <- c()
+for (state_lower in tolower(states)) {
+  slopes <- append(slopes, get_slope(state = state_lower, from = "2020-04-01", until = "2020-05-01")[1])
+}
+df = data.frame(states, saa_order, slopes)
+kable(df, col.names=c("State", "Stay at Home Enacted?", "Avg. April new positives per day"))
+```
+
+Avg. slope of states in this table with “stay at home order”
+	3.525
+Avg. slope of states in this table without “stay at home order”
+	5.731
+Conclusion: stay at home order somewhat effective for states with low pop. density
+Note: no outliers exist in this slope set
+Possible improvements: Add statistical tests with p-values to support this claim
+
+Question 2: Does population density and the speed of spread (slope for the first month) correlate?
+
+This R code (also on github) gets spread speed (slope) for the first month of covid (april) for each state and plots it against the population density.
+Analysis: Result is somewhat linear, with the r-sq value of 0.553. It can be said that there is a weak linear relationship between population density of the state and the speed of covid spread for the first month (April).
+Possible improvements: Use the population density data that is more detailed? Right now the code is using state-level but we can maybe use city-level
+
+
 ```{r pop density vs speed of spread for first month}
 state_names = c()
 popdens = c()
@@ -341,3 +388,16 @@ plot(density_vs_spread$popdens, density_vs_spread$sp_of_sprd)
 abline(a = regres[1] , regres[2], col = "red")
 summary(regres)$r.squared
 ```
+
+
+Google trends data on top of case data
+#Question 3: How does Google Trends search term and covid case data correlate?
+Analysis Term "covid-19":
+The first peak in March and April coincides with the initial national concern with the coronavirus and US cases rising. The U.S. became the country with the most number of covid cases in the world on May 28, 2020 coinciding with the smaller middle peak. The final peak around June and July is when states began to see an increase in cases again; many states shattered their own records for cases, hospitalizations, and deaths per day. 
+
+Conclusion: The spike in the search term “covid-19” appears to correlate with covid-19 case concerns and milestones. 
+
+Analysis Term "lockdown": 
+The individual state peaks align with the day that either the state’s governor announced a lockdown or the day the state’s lockdown went into effect. The one exception is Texas, where the governor asked those to stay at home but did not consider it an order, but 4 of the 5 most populated counties in Texas did implement their own orders around Texas’ peak. Overall, it seems that the spikes in the search term “lockdown” appear to correlate with the stay-at-home orders.
+
+Conclusion: The spikes in the search term “lockdown” appear to correlate with dates that stay-at-home orders were put into place or had recently gone into effect.
