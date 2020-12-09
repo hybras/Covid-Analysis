@@ -19,7 +19,7 @@ NOTE: All code blocks are folded by default. Access by clicking code button next
 
 ## Setup
 
-Download data, install packages and load libraries
+Load libraries
 
 ```{r libs, include = FALSE}
 
