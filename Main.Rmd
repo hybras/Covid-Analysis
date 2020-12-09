@@ -220,37 +220,45 @@ animate_plot(plot_2)
 plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) {
   state <- tolower(state)
   trends_data <-
-    read.csv(paste(sep = '/', '.', 'data', term, paste(sep='', state, ".csv")))
+    read.csv(paste(sep = '/', '.', 'data', term, paste(sep = '', state, ".csv")))
   
   # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
-  scaled_data <- scale_data(state, cases) %>% filter(region %in% state)
+  scaled_data <-
+    scale_data(state, cases) %>% filter(region %in% state)
   
-  plot1 <- scaled_data %>%
-    plot_cases(scaled = T, title = paste("Scaled Cases compared to Term:", term))
+  trends_data = mutate(trends_data, date = Week, Week = NULL)
   
-  trends_data = mutate(trends_data, date=Week, Week=NULL)
+  scale_factor <-
+    max(scaled_data$scaled_cases) / max(trends_data[1])
   
-  plot <- plot1 + geom_line(
-    data = trends_data,
-    inherit.aes = FALSE,
-    aes(x = as.Date(date, "%Y-%m-%d"),
-        y = trends_data[, 1] * 25),
-    size = 2
-  )
+  plot <- scaled_data %>%
+    plot_cases(scaled = T,
+               title = paste("Scaled Cases compared to Term:", term)) +
+    geom_line(
+      data = trends_data,
+      inherit.aes = FALSE,
+      aes(x = as.Date(date, "%Y-%m-%d"),
+          y = trends_data[, 1] * scale_factor),
+      size = 2
+    ) +
+    scale_y_continuous(sec.axis = sec_axis( ~ . / (max(
+      scaled_data$scaled_cases
+    ) / 100), name = paste(sep="", "% of peak interest in \"", term, "\"")))
+  
   return(plot)
 }
 
 plot_trends_data("california", term="covid")
-# plot_trends_data("maryland", term="covid")
-# plot_trends_data("new york", term="covid")
-# plot_trends_data("texas", term="covid")
-# plot_trends_data("florida", term="covid")
-# 
-# plot_trends_data("california", term="lockdown")
-# plot_trends_data("maryland", term="lockdown")
-# plot_trends_data("new york", term="lockdown")
-# plot_trends_data("texas", term="lockdown")
-# plot_trends_data("florida", term="lockdown")
+plot_trends_data("maryland", term="covid")
+plot_trends_data("new york", term="covid")
+plot_trends_data("texas", term="covid")
+plot_trends_data("florida", term="covid")
+
+plot_trends_data("california", term="lockdown")
+plot_trends_data("maryland", term="lockdown")
+plot_trends_data("new york", term="lockdown")
+plot_trends_data("texas", term="lockdown")
+plot_trends_data("florida", term="lockdown")
 ```
 
 ```{r stay_at_home}
