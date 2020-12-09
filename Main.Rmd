@@ -373,7 +373,7 @@ popdens <- c()
 sp_of_sprd <- c()
 for (state_name in pop_density_data$State) {
   # skip these two states because no one lives there anyways and they are giving errors
-  # if you're from these two states, i'm sorry no offense
+  # if you're from these two states, I'm sorry no offense
   if (state_name == "Hawaii" || state_name == "Alaska") {
     next
   }
