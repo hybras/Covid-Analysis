@@ -402,14 +402,14 @@ Possible improvements: Use the population density data that is more detailed? Ri
 
 ```{r gtrends}
 
-plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) {
+plot_trends_data <- function(state, cases = data_fav_states, term) {
   state <- tolower(state)
   trends_data <-
     read.csv(paste(sep = "/", ".", "data", term, paste(sep = "", state, ".csv")))
 
   # Takes a path to the trends data and what states to plot. Defaults to fav_states if none chosen
   scaled_data <-
-    scale_data(state, cases) %>% filter(region %in% state)
+    scale_data(state, cases) %>% filter(region == state)
 
   trends_data <- mutate(trends_data, date = Week, Week = NULL)
 
@@ -442,7 +442,7 @@ plot_trends_data("maryland", term = "covid")
 # plot_trends_data("new york", term = "covid")
 # plot_trends_data("texas", term = "covid")
 # plot_trends_data("florida", term = "covid")
-# 
+
 # plot_trends_data("california", term = "lockdown")
 # plot_trends_data("maryland", term = "lockdown")
 # plot_trends_data("new york", term = "lockdown")
