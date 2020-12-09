@@ -235,7 +235,7 @@ plot_trends_data <- function(state = fav_states, cases = data_fav_states, term) 
     ) +
     scale_y_continuous(sec.axis = sec_axis( ~ . / (max(
       scaled_data$scaled_cases
-    ) / 100), name = "%"))
+    ) / 100), name = paste(sep="", "% of peek interest in \"", term, "\"")))
   
   return(plot)
 }
