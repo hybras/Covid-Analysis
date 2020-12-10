@@ -396,7 +396,9 @@ summary(regres)$r.squared
 
 This R code gets spread speed (slope) for the first month of covid (april) for each state and plots it against the population density.
 
-Analysis: Result is somewhat linear, with the r-sq value of 0.553. It can be said that there is a weak linear relationship between population density of the state and the speed of covid spread for the first month (April).
+### Analysis
+
+Result is somewhat linear, with the r-sq value of 0.553. It can be said that there is a weak linear relationship between population density of the state and the speed of covid spread for the first month (April).
 
 Possible improvements: Use the population density data that is more detailed? Right now the code is using state-level but we can maybe use city-level.
 
