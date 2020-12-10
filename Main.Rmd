@@ -9,6 +9,7 @@ author:
   - "Anthony Costanza (115761773)"
   - "Eisha Ahmed (116630191)"
   - "Kyle Weston (117541120)"
+  - "Yunke Kang (116214209)
 date: "11/12/2020"
 output: 
   html_document:
