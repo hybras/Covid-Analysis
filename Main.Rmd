@@ -14,6 +14,7 @@ date: "11/12/2020"
 output: 
   html_document:
     code_folding: hide
+    toc: true
 ---
 
 NOTE: All code blocks are folded by default. Access by clicking code button next to the text block. (Or open all at once with the button on the top right)
