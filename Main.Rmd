@@ -15,6 +15,8 @@ output:
   html_document:
     code_folding: hide
     toc: true
+  html_notebook:
+    code_folding: hide
 ---
 
 NOTE: All code blocks are folded by default. Access by clicking code button next to the text block. (Or open all at once with the button on the top right)
@@ -404,7 +406,7 @@ Possible improvements: Use the population density data that is more detailed? Ri
 
 ## Question 3: How does Google Trends search term and covid case data correlate?
 
-```{r gtrends}
+```{r gtrends, warning=FALSE, message=FALSE}
 
 plot_trends_data <- function(state, cases = data_fav_states, term) {
   state <- tolower(state)
